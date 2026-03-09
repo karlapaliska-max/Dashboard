@@ -1,0 +1,1053 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Analytics â Incidents</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500;9..40,600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#F5F6F8;--surface:#FFFFFF;--border:#E4E7ED;--border2:#C8D0DE;
+  --t1:#1A1D23;--t2:#5A6478;--t3:#9AA3B4;
+  --acc:#2563EB;--acc-l:#EFF6FF;--acc-m:#DBEAFE;
+}
+body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--t1);font-size:13px;line-height:1.5;min-height:100vh}
+.shell{display:flex;min-height:100vh}
+
+/* ══ SIDEBAR ══ */
+.sidebar{width:236px;background:var(--surface);border-right:1px solid var(--border);display:flex;flex-direction:column;flex-shrink:0;overflow-y:auto}
+.sb-brand{padding:16px 18px 14px;border-bottom:1px solid var(--border)}
+.sb-brand small{font-size:10px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:var(--t3)}
+.sb-brand h2{font-size:15px;font-weight:600;color:var(--t1);margin-top:2px}
+.nav-sec{padding:18px 18px 4px;font-size:10px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--t3)}
+.nav-item{display:flex;align-items:center;gap:10px;padding:7px 18px;color:var(--t2);cursor:pointer;font-size:13px;font-weight:400;border-left:2px solid transparent;transition:color .12s,background .12s}
+.nav-item:hover{color:var(--t1);background:#F7F8FA}
+.nav-item.on{color:var(--acc);background:var(--acc-l);border-left-color:var(--acc);font-weight:500}
+.nav-item .ni{width:16px;height:16px;flex-shrink:0;opacity:.55;display:flex;align-items:center;justify-content:center}
+.nav-item.on .ni{opacity:1}
+.nav-item.expandable{justify-content:space-between}
+.nav-item.expandable .ni-r{font-size:10px;color:var(--t3)}
+
+/* ══ MAIN ══ */
+.main{flex:1;display:flex;flex-direction:column;min-width:0;overflow:hidden;position:relative}
+
+/* ══ TOPBAR ══ */
+.topbar{background:var(--surface);border-bottom:1px solid var(--border);padding:0 28px;height:56px;flex-shrink:0;display:flex;align-items:center;justify-content:space-between}
+.topbar-left small{font-size:10px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:var(--t3)}
+.topbar-left h1{font-size:18px;font-weight:600;color:var(--t1)}
+.topbar-right{display:flex;gap:8px;align-items:center}
+.btn{display:inline-flex;align-items:center;gap:5px;padding:6px 13px;border-radius:6px;font-family:'DM Sans',sans-serif;font-size:12px;font-weight:500;cursor:pointer;border:1px solid var(--border);background:var(--surface);color:var(--t2);transition:all .14s;white-space:nowrap}
+.btn:hover{border-color:var(--border2);color:var(--t1)}
+.btn.primary{background:var(--acc);border-color:var(--acc);color:#fff}
+.btn.primary:hover{background:#1D4ED8}
+
+/* ══ FILTER BAR ══ */
+.filter-bar{background:var(--surface);border-bottom:1px solid var(--border);padding:10px 28px;flex-shrink:0;display:flex;align-items:center;gap:6px;position:relative;z-index:200}
+.f-btn{display:inline-flex;align-items:center;gap:6px;padding:6px 12px;border-radius:7px;font-size:12px;font-weight:500;cursor:pointer;user-select:none;border:1px solid var(--border);background:var(--bg);color:var(--t1);transition:all .14s;white-space:nowrap;position:relative}
+.f-btn:hover{border-color:var(--border2)}
+.f-btn.open{border-color:var(--acc);background:var(--acc-l);color:var(--acc)}
+.f-btn.has-filter{border-color:var(--acc);color:var(--acc)}
+.f-btn .caret{font-size:9px;color:var(--t3);transition:transform .14s}
+.f-btn.open .caret{transform:rotate(180deg)}
+.f-badge{display:inline-flex;align-items:center;justify-content:center;min-width:17px;height:17px;padding:0 4px;border-radius:9px;background:var(--acc);color:#fff;font-size:10px;font-weight:700;line-height:1}
+.f-sep{width:1px;height:20px;background:var(--border)}
+.dropdown{position:absolute;top:calc(100% + 6px);background:var(--surface);border:1px solid var(--border2);border-radius:10px;box-shadow:0 8px 28px rgba(0,0,0,.1);z-index:500;display:none;min-width:260px;animation:dropIn .14s ease}
+@keyframes dropIn{from{opacity:0;transform:translateY(-6px)}to{opacity:1;transform:translateY(0)}}
+.dropdown.open{display:block}
+.dd-head{padding:10px 14px 8px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between}
+.dd-head-label{font-size:11px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:var(--t3)}
+.dd-clear{font-size:11px;color:var(--acc);cursor:pointer;font-weight:500}
+.dd-clear:hover{text-decoration:underline}
+.dd-body{padding:8px 10px 10px}
+.dd-item{display:flex;align-items:center;gap:9px;padding:6px 6px;border-radius:6px;cursor:pointer;transition:background .1s;user-select:none}
+.dd-item:hover{background:#F7F8FA}
+.dd-item input[type=checkbox]{width:15px;height:15px;border-radius:3px;accent-color:var(--acc);cursor:pointer;flex-shrink:0}
+.dd-item-label{font-size:12px;font-weight:500;color:var(--t1);flex:1}
+.dd-item-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0;background:currentColor}
+
+/* ══ TABS ══ */
+.tabs-bar{background:var(--surface);border-bottom:1px solid var(--border);padding:0 28px;flex-shrink:0;display:flex;align-items:center;justify-content:space-between}
+.tabs{display:flex;align-items:flex-end}
+.tab{padding:11px 18px 10px;font-size:12px;font-weight:600;color:var(--t3);cursor:pointer;border-bottom:2px solid transparent;margin-bottom:-1px;transition:all .14s}
+.tab:hover{color:var(--t2)}
+.tab.on{color:var(--acc);border-bottom-color:var(--acc)}
+.gran-toggle{display:flex;background:var(--bg);border:1px solid var(--border);border-radius:7px;padding:2px;gap:2px;margin:8px 0}
+.gb{padding:4px 12px;border-radius:5px;font-family:'DM Sans',sans-serif;font-size:11px;font-weight:600;cursor:pointer;border:none;background:transparent;color:var(--t2);transition:all .14s}
+.gb.on{background:var(--surface);color:var(--t1);box-shadow:0 1px 3px rgba(0,0,0,.08)}
+
+/* ══ CONTENT ══ */
+.content{padding:22px 28px;flex:1;overflow-y:auto;transition:padding-right .3s ease}
+.content.drawer-open{padding-right:460px}
+.panel{display:none}.panel.on{display:block}
+
+/* ══ KPIs ══ */
+.kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:20px}
+.kpi{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:14px 16px;position:relative;overflow:hidden;--kpi-top:var(--acc)}
+.kpi::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;background:var(--kpi-top)}
+.kpi-lbl{font-size:10px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--t3);margin-bottom:4px}
+.kpi-val{font-family:'DM Mono',monospace;font-size:26px;font-weight:500;color:var(--t1);line-height:1}
+.kpi-sub{font-size:10px;color:var(--t3);margin-top:4px}
+
+/* ══ CARD ══ */
+.card{background:var(--surface);border:1px solid var(--border);border-radius:10px;overflow:hidden;margin-bottom:18px}
+.card-head{padding:13px 20px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between}
+.card-head-l h3{font-size:13px;font-weight:600;color:var(--t1)}
+.card-head-l p{font-size:11px;color:var(--t3);margin-top:1px}
+
+/* ══ TIMELINE ══ */
+.area-wrap{padding:18px 20px 0}
+.legend{display:flex;flex-wrap:wrap;gap:8px 16px;padding:12px 20px}
+.leg-i{display:flex;align-items:center;gap:6px;font-size:11px;color:var(--t2)}
+.leg-sw{width:10px;height:10px;border-radius:2px;flex-shrink:0}
+
+/* ══ BY SITE ══ */
+.bysite-chart-outer{overflow-y:visible}
+.bysite-chart-inner{padding:0 20px 20px}
+.axis-header{display:flex;align-items:center;gap:10px;padding:8px 20px 0;position:sticky;top:0;background:var(--surface);z-index:10;border-bottom:1px solid var(--border)}
+.axis-label-spacer{width:140px;flex-shrink:0}
+.axis-track{flex:1;height:20px;position:relative}
+.axis-tick{position:absolute;font-family:'DM Mono',monospace;font-size:9px;color:var(--t3);transform:translateX(-50%)}
+.axis-right-spacer{width:38px;flex-shrink:0}
+.period-group{margin-top:18px}
+.period-group:first-child{margin-top:12px}
+.period-label{font-size:12px;font-weight:600;color:var(--t1);margin-bottom:8px;padding-bottom:5px;border-bottom:1px solid var(--border);display:flex;justify-content:space-between}
+.period-total{font-family:'DM Mono',monospace;font-size:11px;color:var(--t3);font-weight:400}
+
+/* site row — clickable, highlightable */
+.site-row{display:flex;align-items:center;gap:10px;margin-bottom:5px;animation:fadeUp .2s ease forwards;opacity:0;border-radius:6px;padding:3px 4px;cursor:pointer;transition:background .14s}
+@keyframes fadeUp{to{opacity:1}}
+.site-row:hover{background:#F1F3F7}
+.site-row.highlighted{background:var(--acc-l);outline:2px solid var(--acc-m)}
+.site-row-label{width:140px;flex-shrink:0;font-size:11px;font-weight:500;color:var(--t2);text-align:right;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.site-row.highlighted .site-row-label{color:var(--acc);font-weight:600}
+.site-row-bar{flex:1;height:22px;background:#F1F3F7;border-radius:3px;overflow:hidden;display:flex;position:relative}
+.site-row.highlighted .site-row-bar{box-shadow:0 0 0 2px var(--acc)}
+.bar-seg{height:100%;transition:width .35s cubic-bezier(.4,0,.2,1)}
+.site-row-total{font-family:'DM Mono',monospace;font-size:11px;font-weight:500;color:var(--t2);width:38px;text-align:right;flex-shrink:0}
+.empty-state{padding:48px;text-align:center;color:var(--t3)}
+.empty-state strong{display:block;font-size:14px;color:var(--t2);margin-bottom:4px}
+
+/* ══ TABLE ══ */
+.inc-table-wrap{overflow-x:auto}
+.inc-table{width:100%;border-collapse:collapse;font-size:12px;min-width:900px}
+.inc-table th{padding:9px 14px;text-align:left;font-size:10px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:var(--t3);background:var(--bg);border-bottom:1px solid var(--border);white-space:nowrap;user-select:none}
+.inc-table td{padding:9px 14px;border-bottom:1px solid var(--border);color:var(--t1);font-size:12px;vertical-align:middle;white-space:nowrap}
+.inc-table tr:last-child td{border-bottom:none}
+.inc-table tr.total-row td{font-weight:600;background:#FAFBFD}
+.expand-btn{display:inline-flex;align-items:center;gap:6px;cursor:pointer;font-weight:500;color:var(--t1);background:none;border:none;font-family:inherit;font-size:inherit;padding:0}
+.expand-btn .tri{font-size:9px;color:var(--t3);transition:transform .14s;display:inline-block}
+.expand-btn.open .tri{transform:rotate(90deg)}
+.inc-table tr.subrow td{background:#FAFBFD}
+.inc-table tr.subrow td:first-child{padding-left:34px;color:var(--t2);font-size:11px}
+.inc-table td.num{font-family:'DM Mono',monospace;font-size:11px;color:var(--t2)}
+.inc-table td.num.bold{font-weight:600;color:var(--t1);font-size:12px}
+
+/* ══ TOOLTIP ══ */
+.tooltip{position:fixed;background:var(--surface);border:1px solid var(--border2);border-radius:9px;padding:10px 14px;pointer-events:none;z-index:999;min-width:210px;box-shadow:0 6px 24px rgba(0,0,0,.12);display:none}
+.tt-title{font-size:12px;font-weight:600;color:var(--t1);margin-bottom:6px;padding-bottom:5px;border-bottom:1px solid var(--border)}
+.tt-row{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:2px;font-size:11px;color:var(--t2)}
+.tt-dot{width:7px;height:7px;border-radius:50%;flex-shrink:0;margin-right:3px}
+.tt-row span:last-child{font-family:'DM Mono',monospace;color:var(--t1)}
+.tt-sep{height:1px;background:var(--border);margin:5px 0}
+.tt-total{display:flex;justify-content:space-between;font-size:11px;font-weight:600;color:var(--t1)}
+.tt-total span:last-child{font-family:'DM Mono',monospace}
+.tt-note{font-size:10px;color:var(--t3);margin-top:3px;font-style:italic}
+
+/* ══════════════════════════════════════
+   DRILLDOWN DRAWER
+══════════════════════════════════════ */
+.drawer-overlay{
+  position:fixed;inset:0;background:rgba(0,0,0,.15);
+  z-index:300;opacity:0;pointer-events:none;
+  transition:opacity .28s ease;
+}
+.drawer-overlay.active{opacity:1;pointer-events:auto}
+
+.drawer{
+  position:fixed;top:0;right:0;bottom:0;width:460px;
+  background:var(--surface);border-left:1px solid var(--border);
+  z-index:400;display:flex;flex-direction:column;
+  transform:translateX(100%);
+  transition:transform .3s cubic-bezier(.4,0,.2,1);
+  box-shadow:-8px 0 32px rgba(0,0,0,.1);
+}
+.drawer.open{transform:translateX(0)}
+
+/* Drawer header */
+.drawer-header{
+  padding:16px 20px;border-bottom:1px solid var(--border);
+  display:flex;align-items:flex-start;justify-content:space-between;
+  flex-shrink:0;background:var(--surface);
+}
+.drawer-header-info{}
+.drawer-site-label{font-size:10px;font-weight:700;letter-spacing:.09em;text-transform:uppercase;color:var(--t3);margin-bottom:3px}
+.drawer-title{font-size:15px;font-weight:600;color:var(--t1);line-height:1.3}
+.drawer-subtitle{font-size:11px;color:var(--t2);margin-top:2px}
+.drawer-close{
+  width:28px;height:28px;display:flex;align-items:center;justify-content:center;
+  border-radius:6px;border:1px solid var(--border);background:var(--bg);
+  cursor:pointer;color:var(--t2);font-size:14px;flex-shrink:0;
+  transition:all .14s;
+}
+.drawer-close:hover{background:var(--border);color:var(--t1)}
+
+/* Summary metrics strip */
+.drawer-metrics{
+  display:flex;gap:0;border-bottom:1px solid var(--border);
+  flex-shrink:0;background:#FAFBFD;
+}
+.drawer-metric{
+  flex:1;padding:10px 14px;border-right:1px solid var(--border);
+  text-align:center;
+}
+.drawer-metric:last-child{border-right:none}
+.drawer-metric-val{font-family:'DM Mono',monospace;font-size:18px;font-weight:500;color:var(--t1);line-height:1}
+.drawer-metric-lbl{font-size:10px;color:var(--t3);margin-top:2px;font-weight:500}
+
+/* Scrollable tree */
+.drawer-body{flex:1;overflow-y:auto;padding:12px 0 24px}
+
+/* Building level */
+.bld-item{border-bottom:1px solid var(--border)}
+.bld-header{
+  display:flex;align-items:center;gap:10px;padding:10px 20px;
+  cursor:pointer;transition:background .14s;user-select:none;
+}
+.bld-header:hover{background:#F7F8FA}
+.bld-header.open{background:var(--acc-l)}
+.bld-caret{
+  width:18px;height:18px;border-radius:4px;
+  background:var(--bg);border:1px solid var(--border);
+  display:flex;align-items:center;justify-content:center;
+  font-size:9px;color:var(--t3);flex-shrink:0;
+  transition:transform .18s;
+}
+.bld-header.open .bld-caret{transform:rotate(90deg);background:var(--acc-m);border-color:#BFDBFE;color:var(--acc)}
+.bld-icon{font-size:14px;flex-shrink:0}
+.bld-name{font-size:13px;font-weight:600;color:var(--t1);flex:1}
+.bld-header.open .bld-name{color:var(--acc)}
+.bld-count{font-family:'DM Mono',monospace;font-size:11px;color:var(--t3);flex-shrink:0}
+.bld-minibar{flex:1;max-width:100px;height:8px;background:#F1F3F7;border-radius:2px;overflow:hidden;display:flex}
+.bld-minibar-seg{height:100%;transition:width .4s cubic-bezier(.4,0,.2,1)}
+
+/* Building body (floors) */
+.bld-body{
+  overflow:hidden;max-height:0;
+  transition:max-height .28s cubic-bezier(.4,0,.2,1);
+  background:#FAFBFD;
+}
+.bld-body.open{max-height:2000px}
+
+/* Floor level */
+.floor-item{border-top:1px solid var(--border)}
+.floor-header{
+  display:flex;align-items:center;gap:10px;padding:8px 20px 8px 38px;
+  cursor:pointer;transition:background .14s;user-select:none;
+}
+.floor-header:hover{background:#F1F3F7}
+.floor-header.open{background:var(--acc-m)}
+.floor-caret{
+  font-size:9px;color:var(--t3);flex-shrink:0;
+  transition:transform .18s;width:10px;
+}
+.floor-header.open .floor-caret{transform:rotate(90deg);color:var(--acc)}
+.floor-name{font-size:12px;font-weight:500;color:var(--t2);flex:1}
+.floor-header.open .floor-name{color:var(--t1);font-weight:600}
+.floor-count{font-family:'DM Mono',monospace;font-size:11px;color:var(--t3)}
+.floor-minibar{flex:1;max-width:80px;height:6px;background:#E4E7ED;border-radius:2px;overflow:hidden;display:flex}
+.floor-minibar-seg{height:100%;transition:width .4s .05s cubic-bezier(.4,0,.2,1)}
+
+/* Floor body (areas) */
+.floor-body{
+  overflow:hidden;max-height:0;
+  transition:max-height .24s cubic-bezier(.4,0,.2,1);
+}
+.floor-body.open{max-height:1000px}
+
+/* Area level */
+.area-row{
+  display:flex;align-items:center;gap:10px;
+  padding:6px 20px 6px 52px;
+  border-top:1px solid var(--border);
+  background:var(--surface);
+  transition:background .1s;
+  position:relative;
+}
+.area-row:hover{background:#F7F9FF}
+.area-icon{font-size:11px;flex-shrink:0;color:var(--t3)}
+.area-name{font-size:11px;font-weight:500;color:var(--t2);width:110px;flex-shrink:0}
+.area-bar-wrap{flex:1;height:14px;background:#F1F3F7;border-radius:3px;overflow:hidden;display:flex;cursor:pointer}
+.area-bar-seg{height:100%;transition:width .4s .1s cubic-bezier(.4,0,.2,1)}
+.area-count{font-family:'DM Mono',monospace;font-size:10px;color:var(--t3);width:28px;text-align:right;flex-shrink:0}
+</style>
+</head>
+<body>
+
+<div class="tooltip" id="tooltip">
+  <div class="tt-title" id="tt-title"></div>
+  <div id="tt-rows"></div>
+  <div class="tt-sep"></div>
+  <div class="tt-total"><span>Total</span><span id="tt-total-val"></span></div>
+  <div class="tt-note" id="tt-note"></div>
+</div>
+
+<!-- Drawer overlay -->
+<div class="drawer-overlay" id="drawer-overlay" onclick="closeDrawer()"></div>
+
+<!-- ══ DRILLDOWN DRAWER ══ -->
+<div class="drawer" id="drawer">
+  <div class="drawer-header">
+    <div class="drawer-header-info">
+      <div class="drawer-site-label" id="dr-site-label">Site · Period</div>
+      <div class="drawer-title" id="dr-title">—</div>
+      <div class="drawer-subtitle" id="dr-subtitle">—</div>
+    </div>
+    <div class="drawer-close" onclick="closeDrawer()">✕</div>
+  </div>
+  <div class="drawer-metrics" id="dr-metrics"></div>
+  <div class="drawer-body" id="dr-body"></div>
+</div>
+
+<div class="shell">
+
+  <!-- ══ SIDEBAR ══ -->
+  <nav class="sidebar">
+    <div class="sb-brand"><small>Analytics</small><h2>SafeWard</h2></div>
+    <div class="nav-sec">Dashboard</div>
+    <div class="nav-item"><span class="ni"><svg width="14" height="14" viewBox="0 0 16 16" fill="none"><path d="M2 10l4-4 3 3 5-6" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></span>Alerts</div>
+    <div class="nav-item"><span class="ni"><svg width="14" height="14" viewBox="0 0 16 16" fill="none"><rect x="2" y="2" width="5" height="5" rx="1" stroke="currentColor" stroke-width="1.4"/><rect x="9" y="2" width="5" height="5" rx="1" stroke="currentColor" stroke-width="1.4"/><rect x="2" y="9" width="5" height="5" rx="1" stroke="currentColor" stroke-width="1.4"/><rect x="9" y="9" width="5" height="5" rx="1" stroke="currentColor" stroke-width="1.4"/></svg></span>Home Visits</div>
+    <div class="nav-item"><span class="ni"><svg width="14" height="14" viewBox="0 0 16 16" fill="none"><circle cx="8" cy="8" r="6" stroke="currentColor" stroke-width="1.4"/><path d="M8 5v3.5l2 1.5" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/></svg></span>Alert Log</div>
+    <div class="nav-sec">Analytics</div>
+    <div class="nav-item on"><span class="ni"><svg width="14" height="14" viewBox="0 0 16 16" fill="none"><rect x="2" y="9" width="3" height="5" rx=".5" fill="currentColor"/><rect x="6.5" y="6" width="3" height="8" rx=".5" fill="currentColor"/><rect x="11" y="3" width="3" height="11" rx=".5" fill="currentColor"/></svg></span>Incidents</div>
+    <div class="nav-item"><span class="ni"><svg width="14" height="14" viewBox="0 0 16 16" fill="none"><circle cx="8" cy="8" r="2.5" stroke="currentColor" stroke-width="1.4"/><path d="M8 2v1.5M8 12.5V14M2 8h1.5M12.5 8H14" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/></svg></span>Response Times</div>
+    <div class="nav-sec">Devices</div>
+    <div class="nav-item"><span class="ni"><svg width="14" height="14" viewBox="0 0 16 16" fill="none"><path d="M2 12 Q8 2 14 12" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" fill="none"/></svg></span>Tags</div>
+    <div class="nav-item"><span class="ni"><svg width="14" height="14" viewBox="0 0 16 16" fill="none"><rect x="3" y="3" width="10" height="10" rx="2" stroke="currentColor" stroke-width="1.4"/><path d="M6 8h4M8 6v4" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/></svg></span>Gateways</div>
+    <div class="nav-sec">Reports</div>
+    <div class="nav-item expandable"><span style="display:flex;align-items:center;gap:10px"><span class="ni"><svg width="14" height="14" viewBox="0 0 16 16" fill="none"><rect x="3" y="2" width="10" height="12" rx="1.5" stroke="currentColor" stroke-width="1.4"/><path d="M5.5 6h5M5.5 9h3" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/></svg></span>Alert Logs</span><span class="ni-r">▾</span></div>
+  </nav>
+
+  <!-- ══ MAIN ══ -->
+  <div class="main">
+    <div class="topbar">
+      <div class="topbar-left"><small>Analytics</small><h1>Incidents</h1></div>
+      <div class="topbar-right">
+        <button class="btn">↓ PNG</button>
+        <button class="btn">↓ CSV</button>
+        <button class="btn primary">↓ Excel</button>
+      </div>
+    </div>
+
+    <!-- Filter bar -->
+    <div class="filter-bar" id="filter-bar">
+      <div class="f-btn" id="f-date" onclick="toggleDrop('date')">
+        <svg width="13" height="13" viewBox="0 0 16 16" fill="none" style="opacity:.5"><rect x="2" y="3" width="12" height="11" rx="1.5" stroke="currentColor" stroke-width="1.4"/><path d="M5 2v2M11 2v2M2 7h12" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/></svg>
+        <span id="f-date-label">Feb 2025 – Feb 2026</span>
+        <span class="caret">▾</span>
+        <div class="dropdown" id="drop-date">
+          <div class="dd-head"><span class="dd-head-label">Date range</span></div>
+          <div class="dd-body" style="padding:12px 14px">
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
+              <div><div style="font-size:10px;font-weight:600;color:var(--t3);margin-bottom:4px;letter-spacing:.06em;text-transform:uppercase">From</div><input type="date" value="2025-02-25" style="width:100%;padding:6px 8px;border:1px solid var(--border);border-radius:6px;font-family:'DM Sans',sans-serif;font-size:12px;color:var(--t1);background:var(--bg)"></div>
+              <div><div style="font-size:10px;font-weight:600;color:var(--t3);margin-bottom:4px;letter-spacing:.06em;text-transform:uppercase">To</div><input type="date" value="2026-02-24" style="width:100%;padding:6px 8px;border:1px solid var(--border);border-radius:6px;font-family:'DM Sans',sans-serif;font-size:12px;color:var(--t1);background:var(--bg)"></div>
+            </div>
+            <div style="display:flex;gap:5px;margin-top:10px;flex-wrap:wrap">
+              <button class="btn" style="font-size:11px;padding:3px 9px" onclick="setQuickDate('week')">Last 7d</button>
+              <button class="btn" style="font-size:11px;padding:3px 9px" onclick="setQuickDate('month')">Last 30d</button>
+              <button class="btn" style="font-size:11px;padding:3px 9px" onclick="setQuickDate('quarter')">Last 90d</button>
+              <button class="btn" style="font-size:11px;padding:3px 9px" onclick="setQuickDate('year')">Last 12mo</button>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="f-sep"></div>
+      <div class="f-btn" id="f-types" onclick="toggleDrop('types')">
+        <svg width="13" height="13" viewBox="0 0 16 16" fill="none" style="opacity:.5"><path d="M2 4h12M4 8h8M6 12h4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+        <span id="f-types-label">All incident types</span>
+        <span class="f-badge" id="f-types-badge" style="display:none"></span>
+        <span class="caret">▾</span>
+        <div class="dropdown" id="drop-types" style="min-width:280px">
+          <div class="dd-head"><span class="dd-head-label">Incident types</span><span class="dd-clear" onclick="selectAllTypes(true);event.stopPropagation()">Select all</span></div>
+          <div class="dd-body" id="types-list"></div>
+        </div>
+      </div>
+      <div class="f-sep"></div>
+      <div class="f-btn" id="f-sites" onclick="toggleDrop('sites')">
+        <svg width="13" height="13" viewBox="0 0 16 16" fill="none" style="opacity:.5"><path d="M8 2C5.8 2 4 3.8 4 6c0 3 4 8 4 8s4-5 4-8c0-2.2-1.8-4-4-4z" stroke="currentColor" stroke-width="1.4"/><circle cx="8" cy="6" r="1.5" stroke="currentColor" stroke-width="1.3"/></svg>
+        <span id="f-sites-label">All sites</span>
+        <span class="f-badge" id="f-sites-badge" style="display:none"></span>
+        <span class="caret">▾</span>
+        <div class="dropdown" id="drop-sites" style="min-width:260px">
+          <div class="dd-head"><span class="dd-head-label">Sites</span><span class="dd-clear" onclick="selectAllSites(true);event.stopPropagation()">Select all</span></div>
+          <div class="dd-body" id="sites-list"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Tabs -->
+    <div class="tabs-bar">
+      <div class="tabs">
+        <div class="tab" onclick="switchTab('timeline',this)">Timeline</div>
+        <div class="tab on" onclick="switchTab('bysite',this)">By Site</div>
+      </div>
+      <div class="gran-toggle" id="gran-toggle">
+        <button class="gb on" onclick="setGranSite('month',this)">Month</button>
+        <button class="gb" onclick="setGranSite('year',this)">Year</button>
+      </div>
+      <div class="gran-toggle" id="gran-timeline" style="display:none">
+        <button class="gb" onclick="setGran(this)">Day</button>
+        <button class="gb" onclick="setGran(this)">Week</button>
+        <button class="gb on" onclick="setGran(this)">Month</button>
+      </div>
+    </div>
+
+    <div class="content" id="main-content">
+      <!-- KPIs -->
+      <div class="kpis">
+        <div class="kpi" style="--kpi-top:#C0385A"><div class="kpi-lbl">Highest Incident Site</div><div class="kpi-val" id="kpi-a-val">—</div><div class="kpi-sub" id="kpi-a-sub">—</div></div>
+        <div class="kpi" style="--kpi-top:#F4845F"><div class="kpi-lbl">Highest Critical Rate</div><div class="kpi-val" id="kpi-b-val">—</div><div class="kpi-sub" id="kpi-b-sub">—</div></div>
+        <div class="kpi" style="--kpi-top:var(--acc)"><div class="kpi-lbl">Highest Critical Incidents</div><div class="kpi-val" id="kpi-c-val">—</div><div class="kpi-sub" id="kpi-c-sub">—</div></div>
+        <div class="kpi" style="--kpi-top:#94A3B8"><div class="kpi-lbl">Sites Selected</div><div class="kpi-val" id="kpi-d-val">—</div><div class="kpi-sub" id="kpi-d-sub">—</div></div>
+      </div>
+
+      <!-- Timeline panel -->
+      <div id="panel-timeline" class="panel">
+        <div class="card">
+          <div class="card-head"><div class="card-head-l"><h3>Incidents Over Time</h3></div></div>
+          <div class="area-wrap"><svg id="tl-svg" viewBox="0 0 960 260" width="100%" style="display:block;overflow:visible"></svg></div>
+          <div id="tl-empty" style="display:none" class="empty-state"><strong>No data to show</strong>Adjust your filters above</div>
+          <div class="legend" id="tl-legend"></div>
+        </div>
+      </div>
+
+      <!-- By Site panel -->
+      <div id="panel-bysite" class="panel on">
+        <div class="card">
+          <div class="card-head"><div class="card-head-l"><h3>Incidents by Site</h3><p>Click a site row to drill down into buildings, floors &amp; areas</p></div></div>
+          <div class="axis-header"><div class="axis-label-spacer"></div><div class="axis-track" id="axis-track"></div><div class="axis-right-spacer"></div></div>
+          <div class="bysite-chart-outer"><div class="bysite-chart-inner" id="chart-inner"></div></div>
+          <div class="legend" id="bs-legend"></div>
+        </div>
+      </div>
+
+      <!-- Table -->
+      <div class="card" id="incidents-table-card">
+        <div class="card-head"><div class="card-head-l"><h3>Site Breakdown</h3></div><div style="display:flex;gap:8px"><button class="btn">↓ CSV</button><button class="btn primary">↓ Excel</button></div></div>
+        <div class="inc-table-wrap"><table class="inc-table" id="inc-table"><thead id="inc-thead"></thead><tbody id="inc-tbody"></tbody></table></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+// ─────────────────────────────────────────────
+// DATA MODEL
+// ─────────────────────────────────────────────
+const CATS = [
+  { id:'duress',    label:'Duress – by security',     color:'#C0385A' },
+  { id:'nonduress', label:'Non-duress situation',     color:'#F4845F' },
+  { id:'itest_l',   label:'Intentional test (light)', color:'#93AECF' },
+  { id:'itest_d',   label:'Intentional test',         color:'#2563EB' },
+  { id:'dup',       label:'Duplicate event',          color:'#16A34A' },
+  { id:'test',      label:'Test Alert',               color:'#84CC16' },
+  { id:'other',     label:'Resolved Other',           color:'#94A3B8' },
+]
+
+const SITES = [
+  { id:'mayo',       name:'Mayo Clinic'       },
+  { id:'cleveland1', name:'Cleveland Clinic A' },
+  { id:'cleveland2', name:'Cleveland Clinic B' },
+  { id:'canopy',     name:'Canopy General'    },
+  { id:'mercy',      name:'Mercy Hospital'    },
+]
+
+const MONTHS = ['January','February','March','April','May','June','July','August','September','October','November','December']
+
+const DATA = {
+  mayo:[
+    [28,18,12,22,8,18,12],[22,20,15,18,10,22,16],[8,32,28,38,4,62,18],
+    [24,30,22,40,6,52,20],[20,28,24,36,4,58,18],[18,26,20,34,6,56,14],
+    [22,24,22,30,5,54,16],[26,22,18,28,7,48,14],[30,20,16,26,8,44,12],
+    [32,18,14,24,6,42,14],[28,22,18,28,8,46,16],[24,20,16,26,6,44,14],
+  ],
+  cleveland1:[
+    [52,28,10,30,6,24,28],[40,26,8,22,4,18,22],[36,24,10,18,4,20,20],
+    [34,22,8,16,4,18,18],[32,20,8,14,4,16,16],[30,18,6,14,4,14,14],
+    [28,18,8,12,4,14,14],[32,20,8,14,4,16,16],[34,22,10,16,4,18,18],
+    [36,22,10,16,6,18,20],[38,24,10,18,6,20,22],[36,22,10,16,6,18,20],
+  ],
+  cleveland2:[
+    [40,18,8,18,4,14,16],[32,16,8,14,4,12,14],[28,14,6,12,2,10,12],
+    [26,14,8,12,2,10,12],[24,12,6,10,2,8,10],[22,12,6,10,2,8,10],
+    [24,12,6,10,2,8,10],[26,14,6,12,2,10,12],[28,14,8,12,2,10,12],
+    [30,16,8,14,4,12,14],[32,16,8,14,4,12,14],[30,14,8,12,4,12,14],
+  ],
+  canopy:[
+    [60,30,14,24,8,28,22],[48,26,12,20,6,22,18],[44,24,10,18,6,20,16],
+    [42,22,10,16,4,18,16],[38,20,8,14,4,16,14],[36,20,8,14,4,14,14],
+    [38,20,8,14,4,16,14],[40,22,10,16,4,18,16],[44,22,10,18,4,18,16],
+    [46,24,12,18,6,20,18],[48,24,12,20,6,22,20],[46,24,12,18,6,20,18],
+  ],
+  mercy:[
+    [10,6,4,4,2,6,4],[8,4,4,4,2,4,4],[6,4,2,2,2,4,4],
+    [6,4,2,2,2,4,2],[6,4,2,2,2,4,2],[6,4,2,2,2,2,2],
+    [6,4,2,2,2,2,2],[8,4,2,2,2,4,2],[8,4,4,2,2,4,4],
+    [10,6,4,4,2,6,4],[10,6,4,4,2,6,4],[10,6,4,4,2,6,4],
+  ]
+}
+
+// ── DRILLDOWN DATA (building→floor→area per site) ──
+const DRILLDOWN_STRUCTURE = {
+  mayo: {
+    buildings: [
+      { id:'bldA', name:'Building A – Main Tower', icon:'🏥',
+        floors: [
+          { id:'f1', name:'Floor 1 – Emergency',
+            areas:[
+              { name:'Trauma Bay',       dist:[.30,.18,.10,.14,.05,.13,.10] },
+              { name:'Triage',           dist:[.25,.20,.12,.12,.06,.14,.11] },
+              { name:'Waiting Room',     dist:[.15,.25,.15,.10,.07,.16,.12] },
+            ]},
+          { id:'f2', name:'Floor 2 – ICU',
+            areas:[
+              { name:'Patient Rooms',    dist:[.35,.15,.08,.18,.04,.12,.08] },
+              { name:'Nurse Station',    dist:[.20,.22,.14,.12,.06,.16,.10] },
+              { name:'Family Lounge',    dist:[.12,.28,.16,.10,.08,.14,.12] },
+            ]},
+          { id:'f3', name:'Floor 3 – Surgery',
+            areas:[
+              { name:'OR Suite 1',       dist:[.40,.12,.06,.20,.04,.10,.08] },
+              { name:'OR Suite 2',       dist:[.38,.14,.08,.18,.04,.10,.08] },
+              { name:'Recovery',         dist:[.25,.18,.12,.14,.06,.14,.11] },
+            ]},
+        ]
+      },
+      { id:'bldB', name:'Building B – Outpatient', icon:'🏢',
+        floors: [
+          { id:'f1', name:'Floor 1 – Radiology',
+            areas:[
+              { name:'MRI Suite',        dist:[.22,.20,.15,.14,.07,.12,.10] },
+              { name:'CT Lab',           dist:[.20,.22,.14,.14,.06,.14,.10] },
+              { name:'Waiting',          dist:[.15,.28,.14,.10,.07,.15,.11] },
+            ]},
+          { id:'f2', name:'Floor 2 – Oncology',
+            areas:[
+              { name:'Infusion Center',  dist:[.28,.18,.12,.15,.06,.12,.09] },
+              { name:'Consult Rooms',    dist:[.22,.22,.13,.13,.06,.14,.10] },
+            ]},
+        ]
+      },
+      { id:'bldC', name:'Building C – Research', icon:'🔬',
+        floors: [
+          { id:'f1', name:'Floor 1 – Labs',
+            areas:[
+              { name:'Wet Lab A',        dist:[.18,.22,.16,.14,.07,.13,.10] },
+              { name:'Dry Lab B',        dist:[.16,.24,.16,.12,.08,.14,.10] },
+            ]},
+          { id:'f2', name:'Floor 2 – Offices',
+            areas:[
+              { name:'Open Plan',        dist:[.12,.26,.18,.12,.08,.14,.10] },
+              { name:'Conference Rms',   dist:[.10,.28,.18,.12,.08,.14,.10] },
+            ]},
+        ]
+      },
+    ]
+  },
+  cleveland1:{
+    buildings:[
+      { id:'bldA', name:'Building A – Cardiology', icon:'❤️',
+        floors:[
+          { id:'f1', name:'Floor 1 – Cath Lab',
+            areas:[{ name:'Procedure Rm 1', dist:[.35,.15,.08,.20,.04,.10,.08] },{ name:'Recovery Bay', dist:[.28,.18,.10,.16,.05,.13,.10] },{ name:'Waiting',dist:[.18,.25,.14,.12,.06,.14,.11] }]},
+          { id:'f2', name:'Floor 2 – Step Down',
+            areas:[{ name:'Patient Rooms', dist:[.32,.16,.10,.18,.05,.11,.08] },{ name:'Nurse Station', dist:[.22,.20,.12,.14,.06,.15,.11] }]},
+          { id:'f3', name:'Floor 3 – Echo Suite',
+            areas:[{ name:'Echo Lab', dist:[.30,.18,.10,.18,.05,.11,.08] },{ name:'Stress Test', dist:[.28,.18,.11,.15,.05,.13,.10] }]},
+        ]
+      },
+      { id:'bldB', name:'Building B – Neurology', icon:'🧠',
+        floors:[
+          { id:'f1', name:'Floor 1 – Neuro ICU',
+            areas:[{ name:'Patient Rooms', dist:[.38,.14,.07,.20,.04,.10,.07] },{ name:'Nurse Station', dist:[.24,.20,.11,.14,.06,.14,.11] }]},
+          { id:'f2', name:'Floor 2 – Stroke Unit',
+            areas:[{ name:'Acute Bay', dist:[.36,.15,.08,.18,.04,.11,.08] },{ name:'Rehab Gym', dist:[.20,.22,.14,.13,.06,.14,.11] }]},
+        ]
+      },
+    ]
+  },
+  cleveland2:{
+    buildings:[
+      { id:'bldA', name:'Building A – Pediatrics', icon:'👶',
+        floors:[
+          { id:'f1', name:'Floor 1 – PICU',
+            areas:[{ name:'Patient Rooms', dist:[.38,.14,.08,.18,.04,.10,.08] },{ name:'Play Room', dist:[.14,.28,.16,.12,.07,.13,.10] },{ name:'Nurse Station', dist:[.22,.20,.12,.14,.06,.15,.11] }]},
+          { id:'f2', name:'Floor 2 – General',
+            areas:[{ name:'Patient Rooms', dist:[.30,.18,.10,.16,.05,.12,.09] },{ name:'Family Rm', dist:[.12,.30,.16,.12,.07,.13,.10] }]},
+        ]
+      },
+      { id:'bldB', name:'Building B – Maternity', icon:'🌸',
+        floors:[
+          { id:'f1', name:'Floor 1 – Labor & Delivery',
+            areas:[{ name:'LDR Rooms', dist:[.28,.18,.10,.16,.05,.13,.10] },{ name:'OR Suite', dist:[.36,.14,.08,.18,.04,.11,.09] }]},
+          { id:'f2', name:'Floor 2 – Postpartum',
+            areas:[{ name:'Patient Rooms', dist:[.24,.20,.12,.14,.06,.14,.10] },{ name:'Nursery', dist:[.20,.22,.12,.14,.06,.14,.12] }]},
+        ]
+      },
+    ]
+  },
+  canopy:{
+    buildings:[
+      { id:'bldA', name:'Building A – Main', icon:'🏥',
+        floors:[
+          { id:'f1', name:'Floor 1 – Emergency',
+            areas:[{ name:'Trauma Bay', dist:[.38,.15,.08,.18,.04,.10,.07] },{ name:'Triage', dist:[.30,.18,.10,.16,.05,.12,.09] },{ name:'Waiting', dist:[.18,.26,.14,.12,.06,.14,.10] }]},
+          { id:'f2', name:'Floor 2 – Medical',
+            areas:[{ name:'Patient Rooms', dist:[.32,.16,.10,.18,.05,.11,.08] },{ name:'Nurse Station', dist:[.22,.20,.12,.14,.06,.15,.11] }]},
+          { id:'f3', name:'Floor 3 – Surgical',
+            areas:[{ name:'OR Suite A', dist:[.40,.12,.07,.20,.04,.10,.07] },{ name:'Recovery', dist:[.26,.18,.11,.16,.05,.13,.11] }]},
+        ]
+      },
+      { id:'bldB', name:'Building B – West Wing', icon:'🏢',
+        floors:[
+          { id:'f1', name:'Floor 1 – Clinics',
+            areas:[{ name:'Exam Rooms', dist:[.24,.20,.12,.16,.06,.12,.10] },{ name:'Reception', dist:[.15,.28,.15,.12,.07,.13,.10] }]},
+          { id:'f2', name:'Floor 2 – Rehab',
+            areas:[{ name:'PT Gym', dist:[.22,.22,.13,.14,.06,.13,.10] },{ name:'OT Rooms', dist:[.20,.22,.13,.14,.06,.14,.11] }]},
+        ]
+      },
+    ]
+  },
+  mercy:{
+    buildings:[
+      { id:'bldA', name:'Main Building', icon:'🏥',
+        floors:[
+          { id:'f1', name:'Floor 1 – ED',
+            areas:[{ name:'Exam Rooms', dist:[.32,.18,.10,.16,.06,.10,.08] },{ name:'Waiting', dist:[.18,.26,.14,.12,.07,.13,.10] }]},
+          { id:'f2', name:'Floor 2 – Med/Surg',
+            areas:[{ name:'Patient Rooms', dist:[.28,.18,.11,.16,.05,.12,.10] },{ name:'Hallway', dist:[.20,.22,.13,.14,.06,.14,.11] }]},
+        ]
+      },
+    ]
+  },
+}
+
+// ─────────────────────────────────────────────
+// STATE
+// ─────────────────────────────────────────────
+const catActive = Object.fromEntries(CATS.map(c=>[c.id,true]))
+const siteActive = Object.fromEntries(SITES.map(s=>[s.id,true]))
+let granSite = 'month'
+let drawerState = null
+let expandedBldgs = {}
+let expandedFloors = {}
+
+function activeCats(){ return CATS.filter(c=>catActive[c.id]) }
+function activeIdx(){ return CATS.map((c,i)=>catActive[c.id]?i:-1).filter(i=>i>=0) }
+function activeSites(){ return SITES.filter(s=>siteActive[s.id]) }
+function filteredSum(vals){ return activeIdx().reduce((s,i)=>s+(vals[i]||0),0) }
+function yearData(id){ return DATA[id].reduce((a,mo)=>{mo.forEach((v,i)=>a[i]=(a[i]||0)+v);return a},new Array(CATS.length).fill(0)) }
+
+function distToVals(dist, total){
+  const sum = dist.reduce((a,b)=>a+b,0)
+  return dist.map(d=>Math.round((d/sum)*total))
+}
+
+// ─────────────────────────────────────────────
+// DROPDOWNS
+// ─────────────────────────────────────────────
+let openDrop = null
+function toggleDrop(id){
+  const el=document.getElementById('drop-'+id), btn=document.getElementById('f-'+id)
+  if(openDrop&&openDrop!==id){ document.getElementById('drop-'+openDrop).classList.remove('open'); document.getElementById('f-'+openDrop).classList.remove('open') }
+  const isOpen=el.classList.contains('open')
+  el.classList.toggle('open',!isOpen); btn.classList.toggle('open',!isOpen)
+  openDrop=isOpen?null:id
+}
+document.addEventListener('click',e=>{
+  if(!e.target.closest('.f-btn')&&!e.target.closest('.dropdown')){
+    document.querySelectorAll('.dropdown').forEach(d=>d.classList.remove('open'))
+    document.querySelectorAll('.f-btn').forEach(b=>b.classList.remove('open'))
+    openDrop=null
+  }
+})
+function setQuickDate(r){
+  document.getElementById('f-date-label').textContent=r==='week'?'Last 7 days':r==='month'?'Last 30 days':r==='quarter'?'Last 90 days':'Last 12 months'
+}
+
+function buildTypesDD(){
+  document.getElementById('types-list').innerHTML=CATS.map(c=>`
+    <label class="dd-item" onclick="event.stopPropagation()">
+      <input type="checkbox" ${catActive[c.id]?'checked':''} onchange="toggleCat('${c.id}',this.checked)">
+      <span class="dd-item-dot" style="background:${c.color}"></span>
+      <span class="dd-item-label">${c.label}</span>
+    </label>`).join('')
+}
+function toggleCat(id,val){ catActive[id]=val; updateTypesLabel(); renderAll() }
+function selectAllTypes(val){ CATS.forEach(c=>catActive[c.id]=val); buildTypesDD(); updateTypesLabel(); renderAll() }
+function updateTypesLabel(){
+  const n=activeCats().length, badge=document.getElementById('f-types-badge'), label=document.getElementById('f-types-label'), btn=document.getElementById('f-types')
+  if(n===CATS.length){ label.textContent='All incident types'; badge.style.display='none'; btn.classList.remove('has-filter') }
+  else if(n===0){ label.textContent='No types selected'; badge.style.display='none'; btn.classList.add('has-filter') }
+  else{ label.textContent='Incident types'; badge.textContent=n; badge.style.display='inline-flex'; btn.classList.add('has-filter') }
+}
+function buildSitesDD(){
+  document.getElementById('sites-list').innerHTML=SITES.map(s=>`
+    <label class="dd-item" onclick="event.stopPropagation()">
+      <input type="checkbox" ${siteActive[s.id]?'checked':''} onchange="toggleSiteFilter('${s.id}',this.checked)">
+      <span class="dd-item-label">${s.name}</span>
+    </label>`).join('')
+}
+function toggleSiteFilter(id,val){ siteActive[id]=val; updateSitesLabel(); renderAll() }
+function selectAllSites(val){ SITES.forEach(s=>siteActive[s.id]=val); buildSitesDD(); updateSitesLabel(); renderAll() }
+function updateSitesLabel(){
+  const n=activeSites().length, badge=document.getElementById('f-sites-badge'), label=document.getElementById('f-sites-label'), btn=document.getElementById('f-sites')
+  if(n===SITES.length){ label.textContent='All sites'; badge.style.display='none'; btn.classList.remove('has-filter') }
+  else if(n===0){ label.textContent='No sites'; badge.style.display='none'; btn.classList.add('has-filter') }
+  else{ label.textContent='Sites'; badge.textContent=n; badge.style.display='inline-flex'; btn.classList.add('has-filter') }
+}
+
+// ─────────────────────────────────────────────
+// DRAWER
+// ─────────────────────────────────────────────
+function openDrawer(siteId, monthIdx, periodLabel, vals){
+  const site = SITES.find(s=>s.id===siteId)
+  const total = filteredSum(vals)
+  const isNewContext = !drawerState || drawerState.siteId!==siteId || drawerState.monthIdx!==monthIdx
+  drawerState = { siteId, monthIdx, periodLabel, vals }
+  if(isNewContext){ expandedBldgs={}; expandedFloors={} }
+
+  document.getElementById('dr-site-label').textContent = `${site.name} · ${periodLabel}`
+  document.getElementById('dr-title').textContent = `${site.name} — ${periodLabel}`
+  document.getElementById('dr-subtitle').textContent = `Total Incidents: ${total}`
+
+  const duressIdx=0, maxCatIdx=activeIdx().reduce((best,i)=>(vals[i]||0)>(vals[best]||0)?i:best, activeIdx()[0]??0)
+  const topCat = activeCats().length ? CATS[maxCatIdx].label : '—'
+  const critical = catActive['duress'] ? vals[0] : null
+  const critPct = total>0&&critical!==null ? Math.round(critical/total*100)+'%' : '—'
+  document.getElementById('dr-metrics').innerHTML = `
+    <div class="drawer-metric"><div class="drawer-metric-val">${total}</div><div class="drawer-metric-lbl">Total</div></div>
+    <div class="drawer-metric"><div class="drawer-metric-val" style="color:#C0385A">${critical!==null?critical:'—'}</div><div class="drawer-metric-lbl">Critical</div></div>
+    <div class="drawer-metric"><div class="drawer-metric-val" style="color:#C0385A">${critPct}</div><div class="drawer-metric-lbl">% Critical</div></div>
+    <div class="drawer-metric" style="max-width:130px"><div class="drawer-metric-val" style="font-size:11px;font-weight:600;color:var(--t2);padding-top:2px">${topCat.split('–')[0].trim()}</div><div class="drawer-metric-lbl">Top Category</div></div>
+  `
+
+  renderDrawerBody()
+
+  document.getElementById('drawer').classList.add('open')
+  document.getElementById('drawer-overlay').classList.add('active')
+  document.getElementById('main-content').classList.add('drawer-open')
+}
+
+function closeDrawer(){
+  drawerState = null
+  document.getElementById('drawer').classList.remove('open')
+  document.getElementById('drawer-overlay').classList.remove('active')
+  document.getElementById('main-content').classList.remove('drawer-open')
+  document.querySelectorAll('.site-row').forEach(r=>r.classList.remove('highlighted'))
+}
+
+function renderDrawerBody(){
+  if(!drawerState) return
+  const { siteId, vals } = drawerState
+  const total = filteredSum(vals)
+  const struct = DRILLDOWN_STRUCTURE[siteId]
+  if(!struct){ document.getElementById('dr-body').innerHTML='<div style="padding:32px;text-align:center;color:var(--t3)">No detail data available</div>'; return }
+
+  const bldAreaCounts = struct.buildings.map(b=>b.floors.reduce((s,f)=>s+f.areas.length,0))
+  const bldTotalAreas = bldAreaCounts.reduce((a,b)=>a+b,0)
+
+  let html = ''
+  struct.buildings.forEach((bld,bi)=>{
+    const bldFrac = bldAreaCounts[bi]/bldTotalAreas
+    const bldTotal = Math.round(total*bldFrac)
+    const bldVals = distToVals(
+      bld.floors.flatMap(f=>f.areas).reduce((acc,a)=>a.dist.map((d,i)=>acc[i]+d),new Array(7).fill(0)),
+      bldTotal
+    )
+    const filtBldTotal = filteredSum(bldVals)
+    const isOpen = !!expandedBldgs[bld.id]
+
+    const bldBarSegs = activeCats().map(cat=>{
+      const ci=CATS.indexOf(cat), v=bldVals[ci]||0
+      const w = filtBldTotal>0?(v/filtBldTotal*100).toFixed(2):0
+      return `<div class="bld-minibar-seg" style="width:${w}%;background:${cat.color}"></div>`
+    }).join('')
+
+    let floorsHtml = ''
+    bld.floors.forEach(fl=>{
+      const flAreaCount = fl.areas.length
+      const flFrac = flAreaCount / bld.floors.reduce((s,f2)=>s+f2.areas.length,0)
+      const flTotal = Math.round(bldTotal*flFrac)
+      const flVals = distToVals(
+        fl.areas.reduce((acc,a)=>a.dist.map((d,i)=>acc[i]+d),new Array(7).fill(0)),
+        flTotal
+      )
+      const filtFlTotal = filteredSum(flVals)
+      const flOpen = expandedFloors[bld.id]===fl.id
+
+      const flBarSegs = activeCats().map(cat=>{
+        const ci=CATS.indexOf(cat), v=flVals[ci]||0
+        const w = filtFlTotal>0?(v/filtFlTotal*100).toFixed(2):0
+        return `<div class="floor-minibar-seg" style="width:${w}%;background:${cat.color}"></div>`
+      }).join('')
+
+      let areasHtml = ''
+      if(flOpen){
+        fl.areas.forEach(area=>{
+          const aFrac = 1/fl.areas.length
+          const aTotal = Math.round(flTotal*aFrac)
+          const aVals = distToVals(area.dist, aTotal)
+          const filtATotal = filteredSum(aVals)
+          const aBarSegs = activeCats().map(cat=>{
+            const ci=CATS.indexOf(cat), v=aVals[ci]||0
+            const w=filtATotal>0?(v/filtATotal*100).toFixed(2):0
+            return `<div class="area-bar-seg" style="width:${w}%;background:${cat.color}" data-cat="${cat.label}" data-val="${v}"></div>`
+          }).join('')
+          const avJson = JSON.stringify(aVals).replace(/"/g,'&quot;')
+          areasHtml += `
+            <div class="area-row"
+              onmouseenter="showAreaTip(event,'${area.name}',${avJson},${filtATotal})"
+              onmouseleave="hideTip()">
+              <span class="area-icon">📍</span>
+              <span class="area-name">${area.name}</span>
+              <div class="area-bar-wrap">${aBarSegs}</div>
+              <span class="area-count">${filtATotal}</span>
+            </div>`
+        })
+      }
+
+      floorsHtml += `
+        <div class="floor-item">
+          <div class="floor-header${flOpen?' open':''}" onclick="toggleFloor('${bld.id}','${fl.id}')">
+            <span class="floor-caret">▶</span>
+            <span class="floor-name">${fl.name}</span>
+            <div class="floor-minibar">${flBarSegs}</div>
+            <span class="floor-count">${filtFlTotal}</span>
+          </div>
+          <div class="floor-body${flOpen?' open':''}">
+            ${areasHtml}
+          </div>
+        </div>`
+    })
+
+    html += `
+      <div class="bld-item">
+        <div class="bld-header${isOpen?' open':''}" onclick="toggleBld('${bld.id}')">
+          <span class="bld-caret">▶</span>
+          <span class="bld-icon">${bld.icon}</span>
+          <span class="bld-name">${bld.name}</span>
+          <div class="bld-minibar">${bldBarSegs}</div>
+          <span class="bld-count">${filtBldTotal}</span>
+        </div>
+        <div class="bld-body${isOpen?' open':''}">
+          ${isOpen ? floorsHtml : ''}
+        </div>
+      </div>`
+  })
+
+  document.getElementById('dr-body').innerHTML = html
+}
+
+function toggleBld(bldId){
+  expandedBldgs[bldId] = !expandedBldgs[bldId]
+  if(!expandedBldgs[bldId]) delete expandedFloors[bldId]
+  renderDrawerBody()
+}
+
+function toggleFloor(bldId, floorId){
+  expandedFloors[bldId] = expandedFloors[bldId]===floorId ? null : floorId
+  renderDrawerBody()
+}
+
+function showAreaTip(e, name, vals, tot){
+  const tt=document.getElementById('tooltip')
+  document.getElementById('tt-title').textContent=name
+  document.getElementById('tt-total-val').textContent=tot
+  document.getElementById('tt-rows').innerHTML=activeCats().map(cat=>{
+    const ci=CATS.indexOf(cat),v=vals[ci]||0
+    return v?`<div class="tt-row"><span style="display:flex;align-items:center"><span class="tt-dot" style="background:${cat.color}"></span>${cat.label}</span><span>${v}</span></div>`:''
+  }).join('')
+  document.getElementById('tt-note').textContent=''
+  tt.style.display='block'; moveTip(e)
+}
+
+// ─────────────────────────────────────────────
+// KPIs
+// ─────────────────────────────────────────────
+function updateKPIs(){
+  const as=activeSites()
+  if(!as.length){
+    ['a','b','c','d'].forEach(k=>{ document.getElementById(`kpi-${k}-val`).textContent='—'; document.getElementById(`kpi-${k}-sub`).textContent='No sites' })
+    return
+  }
+  const siteTotals=as.map(s=>({ site:s, total:yearData(s.id).reduce((sum,v,i)=>catActive[CATS[i].id]?sum+v:sum,0), duress:yearData(s.id)[0] }))
+  const highest=siteTotals.reduce((a,b)=>a.total>=b.total?a:b)
+  const highestCrit=siteTotals.reduce((a,b)=>{ const ra=a.total>0?a.duress/a.total:0,rb=b.total>0?b.duress/b.total:0; return ra>=rb?a:b })
+  const highestCritCount=siteTotals.reduce((a,b)=>a.duress>=b.duress?a:b)
+  document.getElementById('kpi-a-val').textContent=highest.total
+  document.getElementById('kpi-a-sub').textContent=highest.site.name
+  document.getElementById('kpi-b-val').textContent=highestCrit.total>0?Math.round(highestCrit.duress/highestCrit.total*100)+'%':'—'
+  document.getElementById('kpi-b-sub').textContent=highestCrit.site.name
+  document.getElementById('kpi-c-val').textContent=highestCritCount.duress
+  document.getElementById('kpi-c-sub').textContent=highestCritCount.site.name
+  document.getElementById('kpi-d-val').textContent=as.length
+  document.getElementById('kpi-d-sub').textContent='Of '+SITES.length+' total'
+}
+
+function renderLegend(id){ document.getElementById(id).innerHTML=activeCats().map(c=>`<div class="leg-i"><div class="leg-sw" style="background:${c.color}"></div>${c.label}</div>`).join('') }
+
+// ─────────────────────────────────────────────
+// TIMELINE
+// ─────────────────────────────────────────────
+function timelineMonthlyTotals(){ return MONTHS.map((_,mi)=>CATS.map((_,ci)=>SITES.reduce((sum,site)=>siteActive[site.id]?sum+(DATA[site.id]?.[mi]?.[ci]||0):sum,0))) }
+
+function renderTimeline(){
+  const svg=document.getElementById('tl-svg'), emptyEl=document.getElementById('tl-empty')
+  const ac=activeCats(), as=activeSites()
+  if(!ac.length||!as.length){ svg.style.display='none'; emptyEl.style.display='block'; return }
+  svg.style.display='block'; emptyEl.style.display='none'
+  const monthly=timelineMonthlyTotals(), maxVal=Math.max(...monthly.map(mo=>activeIdx().reduce((s,i)=>s+(mo[i]||0),0)),1)
+  const niceMax=Math.ceil(maxVal/50)*50, W=960,H=280,PL=52,PR=16,PT=16,PB=46
+  const cW=W-PL-PR,cH=H-PT-PB,n=12, xOf=i=>PL+(i/(n-1))*cW, yOf=v=>PT+cH-(v/niceMax)*cH
+  let defs='<defs>', paths='', cumul=new Array(n).fill(0)
+  ;[...activeIdx()].reverse().forEach(ci=>{
+    const cat=CATS[ci], lower=[...cumul]
+    for(let i=0;i<n;i++) cumul[i]+=(monthly[i][ci]||0)
+    const upper=[...cumul]
+    const top=upper.map((_,i)=>`${xOf(i).toFixed(1)},${yOf(upper[i]).toFixed(1)}`).join(' L')
+    const bot=lower.map((_,i)=>`${xOf(n-1-i).toFixed(1)},${yOf(lower[n-1-i]).toFixed(1)}`).join(' L')
+    defs+=`<linearGradient id="tg${ci}" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="${cat.color}" stop-opacity=".6"/><stop offset="100%" stop-color="${cat.color}" stop-opacity=".08"/></linearGradient>`
+    paths+=`<path d="M${top} L${bot} Z" fill="url(#tg${ci})" stroke="${cat.color}" stroke-width="1.5" stroke-linejoin="round"/>\n`
+  })
+  defs+='</defs>'
+  let grid=''
+  for(let i=0;i<=5;i++){
+    const v=(i/5)*niceMax, y=yOf(v), isZ=i===0
+    grid+=`<line x1="${PL}" y1="${y.toFixed(1)}" x2="${W-PR}" y2="${y.toFixed(1)}" stroke="${isZ?'#C8D0DE':'#E4E7ED'}" stroke-width="${isZ?1.5:1}" stroke-dasharray="${isZ?'none':'3,4'}"/><text x="${PL-8}" y="${(y+3.5).toFixed(1)}" fill="#9AA3B4" font-size="10" text-anchor="end" font-family="DM Mono">${Math.round(v)}</text>`
+  }
+  for(let i=0;i<n;i++) grid+=`<line x1="${xOf(i).toFixed(1)}" y1="${PT}" x2="${xOf(i).toFixed(1)}" y2="${PT+cH}" stroke="#E4E7ED" stroke-width="1" stroke-dasharray="3,4"/>`
+  const mLabels=['Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec','Jan','Feb']
+  const xlabels=mLabels.map((m,i)=>`<text x="${xOf(i).toFixed(1)}" y="${(PT+cH+14).toFixed(1)}" fill="#9AA3B4" font-size="10" text-anchor="middle" font-family="DM Mono">${m}</text>`).join('')
+  svg.setAttribute('viewBox',`0 0 ${W} ${H}`)
+  svg.innerHTML=defs+grid+paths+xlabels
+  renderLegend('tl-legend')
+}
+
+// ─────────────────────────────────────────────
+// BY SITE
+// ─────────────────────────────────────────────
+function getGlobalMax(){
+  const as=activeSites(); if(!as.length) return 100
+  const vals=[]
+  as.forEach(s=>{ if(granSite==='month') DATA[s.id].forEach(mo=>vals.push(filteredSum(mo))); else vals.push(filteredSum(yearData(s.id))) })
+  return Math.max(...vals,1)
+}
+function renderAxis(max){ document.getElementById('axis-track').innerHTML=[0,.25,.5,.75,1].map(t=>`<span class="axis-tick" style="left:${t*100}%">${Math.round(t*max)}</span>`).join('') }
+
+function renderBysite(){
+  const inner=document.getElementById('chart-inner'), as=activeSites(), ac=activeCats()
+  if(!as.length||!ac.length){ inner.innerHTML=`<div class="empty-state"><strong>${!as.length?'No sites selected':'No incident types selected'}</strong>Adjust filters above</div>`; return }
+  const max=getGlobalMax(); renderAxis(max)
+  const periods=granSite==='month'
+    ?MONTHS.map((m,mi)=>({label:m,monthIdx:mi,data:as.map(s=>({site:s,vals:DATA[s.id][mi]}))}))
+    :[{label:'Feb 2025 – Feb 2026',monthIdx:-1,data:as.map(s=>({site:s,vals:yearData(s.id)}))}]
+
+  inner.innerHTML=periods.map(period=>{
+    const pTotal=period.data.reduce((s,d)=>s+filteredSum(d.vals),0)
+    const rows=period.data.map((d,ri)=>{
+      const tot=filteredSum(d.vals)
+      const segs=ac.map(cat=>{ const ci=CATS.indexOf(cat),v=d.vals[ci]||0; return v?`<div class="bar-seg" style="width:${(v/max*100).toFixed(2)}%;background:${cat.color}"></div>`:'' }).join('')
+      const vj=JSON.stringify(d.vals).replace(/"/g,'&quot;')
+      const isHL=drawerState&&drawerState.siteId===d.site.id&&drawerState.monthIdx===period.monthIdx
+      return `
+        <div class="site-row${isHL?' highlighted':''}" style="animation-delay:${ri*30}ms"
+             data-site="${d.site.id}" data-month="${period.monthIdx}"
+             onclick="handleSiteRowClick('${d.site.id}',${period.monthIdx},'${period.label}',${vj})"
+             onmouseenter="showTip(event,'${d.site.name}',${vj},${tot},'${period.label}')"
+             onmouseleave="hideTip()">
+          <div class="site-row-label">${d.site.name}</div>
+          <div class="site-row-bar">${segs}</div>
+          <div class="site-row-total">${tot||'—'}</div>
+        </div>`
+    }).join('')
+    return `<div class="period-group"><div class="period-label">${period.label}<span class="period-total">total ${pTotal}</span></div>${rows}</div>`
+  }).join('')
+  renderLegend('bs-legend')
+}
+
+function handleSiteRowClick(siteId, monthIdx, periodLabel, vals){
+  if(drawerState && drawerState.siteId===siteId && drawerState.monthIdx===monthIdx){
+    closeDrawer(); renderBysite(); return
+  }
+  openDrawer(siteId, monthIdx, periodLabel, vals)
+  renderBysite()
+}
+
+// ─────────────────────────────────────────────
+// TOOLTIP
+// ─────────────────────────────────────────────
+function showTip(e,name,vals,tot,period){
+  const tt=document.getElementById('tooltip')
+  document.getElementById('tt-title').innerHTML=`<span style="font-size:10px;color:var(--t3);font-weight:400">${period} · </span>${name}`
+  document.getElementById('tt-total-val').textContent=tot||0
+  document.getElementById('tt-rows').innerHTML=activeCats().map(cat=>{ const ci=CATS.indexOf(cat),v=vals[ci]||0; return v?`<div class="tt-row"><span style="display:flex;align-items:center"><span class="tt-dot" style="background:${cat.color}"></span>${cat.label}</span><span>${v}</span></div>`:'' }).join('')
+  document.getElementById('tt-note').textContent=activeCats().length<CATS.length?`${vals.reduce((a,b)=>a+b,0)} total incl. hidden types`:''
+  tt.style.display='block'; moveTip(e)
+}
+function moveTip(e){ const tt=document.getElementById('tooltip'); let x=e.clientX+14,y=e.clientY-10; if(x+230>window.innerWidth)x=e.clientX-240; if(y+tt.offsetHeight+10>window.innerHeight)y=e.clientY-tt.offsetHeight-10; tt.style.left=x+'px'; tt.style.top=y+'px' }
+function hideTip(){ document.getElementById('tooltip').style.display='none' }
+document.addEventListener('mousemove',e=>{ if(document.getElementById('tooltip').style.display==='block') moveTip(e) })
+
+// ─────────────────────────────────────────────
+// TABLE
+// ─────────────────────────────────────────────
+const TCOLS=[{key:'duress',label:'Duress'},{key:'nonduress',label:'Non-duress'},{key:'itest_l',label:'Int. test (light)'},{key:'itest_d',label:'Int. test'},{key:'dup',label:'Duplicate'},{key:'test',label:'Test Alert'},{key:'other',label:'Resolved Other'}]
+let tableExpandState={}
+function siteYearCatTotals(id){ return CATS.map((_,ci)=>DATA[id].reduce((s,mo)=>s+(mo[ci]||0),0)) }
+function renderIncidentsTable(){
+  const as=activeSites(), thead=document.getElementById('inc-thead'), tbody=document.getElementById('inc-tbody')
+  if(!thead||!tbody) return
+  thead.innerHTML=`<tr><th style="min-width:160px">Site</th><th>Total</th>${TCOLS.map(c=>`<th style="min-width:90px">${c.label}</th>`).join('')}</tr>`
+  if(!as.length){ tbody.innerHTML=`<tr><td colspan="${2+TCOLS.length}" style="text-align:center;padding:32px;color:var(--t3)">No sites selected</td></tr>`; return }
+  const rows=as.map(s=>{ const cats=siteYearCatTotals(s.id); return {site:s,cats,total:cats.reduce((a,b)=>a+b,0),monthRows:MONTHS.map((m,mi)=>({label:m+' 2025',cats:DATA[s.id][mi],total:DATA[s.id][mi].reduce((a,b)=>a+b,0)}))} })
+  const gc=CATS.map((_,ci)=>rows.reduce((s,r)=>s+r.cats[ci],0)), gt=gc.reduce((a,b)=>a+b,0)
+  const numCell=(v,bold=false)=>v?`<td class="num${bold?' bold':''}">${v}</td>`:`<td class="num" style="color:var(--border2)">—</td>`
+  let html=`<tr class="total-row"><td style="font-weight:600">Total</td>${numCell(gt,true)}${gc.map(v=>numCell(v)).join('')}</tr>`
+  rows.forEach(r=>{
+    const ex=!!tableExpandState[r.site.id]
+    html+=`<tr><td><button class="expand-btn${ex?' open':''}" onclick="toggleTableRow('${r.site.id}')"><span class="tri">▶</span>${r.site.name}</button></td>${numCell(r.total,true)}${r.cats.map(v=>numCell(v)).join('')}</tr>`
+    if(ex) r.monthRows.forEach(mr=>{ if(mr.total) html+=`<tr class="subrow"><td>${mr.label}</td>${numCell(mr.total)}${mr.cats.map(v=>numCell(v)).join('')}</tr>` })
+  })
+  tbody.innerHTML=html
+}
+function toggleTableRow(id){ tableExpandState[id]=!tableExpandState[id]; renderIncidentsTable() }
+
+// ─────────────────────────────────────────────
+// TAB & GRAN
+// ─────────────────────────────────────────────
+function renderAll(){
+  const isTL=document.getElementById('panel-timeline').classList.contains('on')
+  if(isTL) renderTimeline(); else renderBysite()
+  updateKPIs(); renderIncidentsTable()
+  if(drawerState) renderDrawerBody()
+}
+function switchTab(id,el){
+  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('on')); el.classList.add('on')
+  document.querySelectorAll('.panel').forEach(p=>p.classList.remove('on')); document.getElementById('panel-'+id).classList.add('on')
+  document.getElementById('gran-toggle').style.display=id==='bysite'?'flex':'none'
+  document.getElementById('gran-timeline').style.display=id==='timeline'?'flex':'none'
+  if(id==='bysite') renderBysite(); else renderTimeline()
+  updateKPIs(); renderIncidentsTable()
+}
+function setGranSite(mode,btn){ granSite=mode; btn.closest('.gran-toggle').querySelectorAll('.gb').forEach(b=>b.classList.remove('on')); btn.classList.add('on'); renderBysite() }
+function setGran(btn){ btn.closest('.gran-toggle').querySelectorAll('.gb').forEach(b=>b.classList.remove('on')); btn.classList.add('on') }
+
+// ─────────────────────────────────────────────
+// INIT
+// ─────────────────────────────────────────────
+buildTypesDD(); buildSitesDD()
+renderBysite(); updateKPIs(); renderIncidentsTable()
+</script>
+</body>
+</html>
