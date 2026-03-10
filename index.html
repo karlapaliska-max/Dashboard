@@ -12,7 +12,7 @@
   --t1:#1A1D23;--t2:#5A6478;--t3:#9AA3B4;
   --acc:#2563EB;--acc-l:#EFF6FF;--acc-m:#DBEAFE;
 }
-body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--t1);font-size:13px;line-height:1.5;min-height:100vh}
+body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--t1);font-size:14px;line-height:1.5;min-height:100vh}
 .shell{display:flex;min-height:100vh}
 
 /* ══ SIDEBAR ══ */
@@ -84,9 +84,9 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--t1);font-
 .kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:20px}
 .kpi{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:14px 16px;position:relative;overflow:hidden;--kpi-top:var(--acc)}
 .kpi::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;background:var(--kpi-top)}
-.kpi-lbl{font-size:10px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--t3);margin-bottom:4px}
+.kpi-lbl{font-size:11px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--t3);margin-bottom:4px}
 .kpi-val{font-family:'DM Mono',monospace;font-size:26px;font-weight:500;color:var(--t1);line-height:1}
-.kpi-sub{font-size:10px;color:var(--t3);margin-top:4px}
+.kpi-sub{font-size:13px;color:var(--t3);margin-top:4px}
 
 /* ══ CARD ══ */
 .card{background:var(--surface);border:1px solid var(--border);border-radius:10px;overflow:hidden;margin-bottom:18px}
@@ -97,7 +97,7 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--t1);font-
 /* ══ TIMELINE ══ */
 .area-wrap{padding:18px 20px 0}
 .legend{display:flex;flex-wrap:wrap;gap:8px 16px;padding:12px 20px}
-.leg-i{display:flex;align-items:center;gap:6px;font-size:11px;color:var(--t2)}
+.leg-i{display:flex;align-items:center;gap:6px;font-size:13px;color:var(--t2)}
 .leg-sw{width:10px;height:10px;border-radius:2px;flex-shrink:0}
 
 /* ══ BY SITE ══ */
@@ -110,20 +110,20 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--t1);font-
 .axis-right-spacer{width:38px;flex-shrink:0}
 .period-group{margin-top:18px}
 .period-group:first-child{margin-top:12px}
-.period-label{font-size:12px;font-weight:600;color:var(--t1);margin-bottom:8px;padding-bottom:5px;border-bottom:1px solid var(--border);display:flex;justify-content:space-between}
-.period-total{font-family:'DM Mono',monospace;font-size:11px;color:var(--t3);font-weight:400}
+.period-label{font-size:14px;font-weight:600;color:var(--t1);margin-bottom:8px;padding-bottom:5px;border-bottom:1px solid var(--border);display:flex;justify-content:space-between}
+.period-total{font-family:'DM Mono',monospace;font-size:13px;color:var(--t3);font-weight:400}
 
 /* site row — clickable, highlightable */
 .site-row{display:flex;align-items:center;gap:10px;margin-bottom:5px;animation:fadeUp .2s ease forwards;opacity:0;border-radius:6px;padding:3px 4px;cursor:pointer;transition:background .14s}
 @keyframes fadeUp{to{opacity:1}}
 .site-row:hover{background:#F1F3F7}
 .site-row.highlighted{background:var(--acc-l);outline:2px solid var(--acc-m)}
-.site-row-label{width:140px;flex-shrink:0;font-size:11px;font-weight:500;color:var(--t2);text-align:right;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.site-row-label{width:160px;flex-shrink:0;font-size:14px;font-weight:500;color:var(--t2);text-align:right;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .site-row.highlighted .site-row-label{color:var(--acc);font-weight:600}
 .site-row-bar{flex:1;height:22px;background:#F1F3F7;border-radius:3px;overflow:hidden;display:flex;position:relative}
 .site-row.highlighted .site-row-bar{box-shadow:0 0 0 2px var(--acc)}
 .bar-seg{height:100%;transition:width .35s cubic-bezier(.4,0,.2,1)}
-.site-row-total{font-family:'DM Mono',monospace;font-size:11px;font-weight:500;color:var(--t2);width:38px;text-align:right;flex-shrink:0}
+.site-row-total{font-family:'DM Mono',monospace;font-size:14px;font-weight:500;color:var(--t2);width:44px;text-align:right;flex-shrink:0}
 .empty-state{padding:48px;text-align:center;color:var(--t3)}
 .empty-state strong{display:block;font-size:14px;color:var(--t2);margin-bottom:4px}
 
@@ -201,8 +201,22 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--t1);font-
   text-align:center;
 }
 .drawer-metric:last-child{border-right:none}
-.drawer-metric-val{font-family:'DM Mono',monospace;font-size:32px;font-weight:500;color:var(--t1);line-height:1}
+.drawer-metric-val{font-family:'DM Mono',monospace;font-size:26px;font-weight:500;color:var(--t1);line-height:1}
 .drawer-metric-lbl{font-size:14px;color:var(--t3);margin-top:2px;font-weight:500}
+
+/* Month nav */
+.drawer-months{
+  display:flex;gap:4px;padding:10px 16px;border-bottom:1px solid var(--border);
+  flex-shrink:0;overflow-x:auto;scrollbar-width:none;background:var(--surface);
+}
+.drawer-months::-webkit-scrollbar{display:none}
+.dr-month-pill{
+  padding:4px 11px;border-radius:16px;font-size:12px;font-weight:500;
+  cursor:pointer;border:1px solid var(--border);color:var(--t2);
+  background:var(--bg);white-space:nowrap;transition:all .14s;font-family:'DM Sans',sans-serif;
+}
+.dr-month-pill:hover{border-color:var(--acc);color:var(--acc)}
+.dr-month-pill.active{background:var(--acc);color:#fff;border-color:var(--acc)}
 
 /* Scrollable tree */
 .drawer-body{flex:1;overflow-y:auto;padding:12px 16px 24px}
@@ -210,26 +224,22 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--t1);font-
 /* Building level */
 .bld-item{border:1px solid var(--border);margin-bottom:10px;border-radius:10px;overflow:hidden}
 .bld-header{
-  display:flex;align-items:center;gap:14px;padding:12px 16px;
+  display:flex;flex-direction:column;gap:10px;padding:14px 16px;
   cursor:pointer;transition:background .14s;user-select:none;
 }
 .bld-header:hover{background:#F7F8FA}
 .bld-header.open{background:var(--acc-l)}
-.bld-header-left{flex:1;display:flex;flex-direction:column;gap:2px}
 .bld-header-top{display:flex;align-items:center;gap:8px}
 .bld-caret{
-  width:18px;height:18px;border-radius:4px;
-  background:var(--bg);border:1px solid var(--border);
-  display:flex;align-items:center;justify-content:center;
-  font-size:9px;color:var(--t3);flex-shrink:0;
-  transition:transform .18s;
+  font-size:11px;color:var(--t3);flex-shrink:0;
+  transition:transform .18s;line-height:1;
 }
-.bld-header.open .bld-caret{transform:rotate(90deg);background:var(--acc-m);border-color:#BFDBFE;color:var(--acc)}
+.bld-header.open .bld-caret{transform:rotate(90deg);color:var(--acc)}
 .bld-icon{display:none}
 .bld-name{font-size:14px;font-weight:600;color:var(--t1);flex:1}
 .bld-header.open .bld-name{color:var(--acc)}
-.bld-count{font-family:'DM Mono',monospace;font-size:14px;color:var(--t3)}
-.bld-barchart{flex-shrink:0}
+.bld-count{font-family:'DM Mono',monospace;font-size:14px;color:var(--t3);margin-left:auto}
+.bld-barchart{width:100%;overflow:visible}
 
 /* Building body (floors) */
 .bld-body{
@@ -311,6 +321,7 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--t1);font-
     <div class="drawer-close" onclick="closeDrawer()">✕</div>
   </div>
   <div class="drawer-metrics" id="dr-metrics"></div>
+  <div class="drawer-months" id="dr-months"></div>
   <div class="drawer-body" id="dr-body"></div>
 </div>
 
@@ -452,11 +463,11 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--t1);font-
 const CATS = [
   { id:'duress',    label:'Duress – by security',     color:'#C0385A' },
   { id:'nonduress', label:'Non-duress situation',     color:'#F4845F' },
-  { id:'itest_l',   label:'Intentional test (light)', color:'#93AECF' },
+  { id:'itest_l',   label:'Intentional test (light)', color:'#38BDF8' },
   { id:'itest_d',   label:'Intentional test',         color:'#2563EB' },
   { id:'dup',       label:'Duplicate event',          color:'#16A34A' },
   { id:'test',      label:'Test Alert',               color:'#84CC16' },
-  { id:'other',     label:'Resolved Other',           color:'#94A3B8' },
+  { id:'other',     label:'Resolved Other',           color:'#CBD5E1' },
 ]
 
 const SITES = [
@@ -713,26 +724,34 @@ function updateSitesLabel(){
 }
 
 // ─────────────────────────────────────────────
-// BAR CHART HELPER (replaces donut)
+// BAR CHART HELPER
 // ─────────────────────────────────────────────
 function buildBarChartSVG(vals, total){
   const cats = activeCats().filter(cat => (vals[CATS.indexOf(cat)]||0) > 0)
   if(cats.length === 0 || total === 0) return ''
-  const barW=14, gap=5, padL=3, padR=3, chartH=48, labelH=16
-  const svgW = padL + cats.length*(barW+gap) - gap + padR
-  const svgH = chartH + labelH
-  const maxVal = Math.max(...cats.map(cat => vals[CATS.indexOf(cat)]||0))
-  const SHORT = {duress:'DUR',nonduress:'NON',itest_l:'ITL',itest_d:'ITD',dup:'DUP',test:'TST',other:'OTH'}
-  let bars = ''
-  cats.forEach((cat, i) => {
-    const v = vals[CATS.indexOf(cat)]||0
-    const barH = Math.max(3, Math.round(v/maxVal*chartH))
-    const x = padL + i*(barW+gap)
-    const y = chartH - barH
-    bars += `<rect x="${x}" y="${y}" width="${barW}" height="${barH}" fill="${cat.color}" rx="2"/>`
-    bars += `<text x="${x+barW/2}" y="${svgH}" text-anchor="middle" font-family="DM Sans,sans-serif" font-size="9" fill="#6B7280">${SHORT[cat.id]||cat.id.substring(0,3).toUpperCase()}</text>`
+  const padL=10, padR=10, topPad=18, chartH=72, labelArea=80
+  const svgW=580, svgH=topPad+chartH+labelArea
+  const slotW=(svgW-padL-padR)/cats.length
+  const barW=Math.min(52, slotW*0.62)
+  const maxVal=Math.max(...cats.map(cat=>vals[CATS.indexOf(cat)]||0))
+  const LNAMES={
+    duress:'Duress', nonduress:'Non-duress',
+    itest_l:'Test (light)', itest_d:'Intentional test',
+    dup:'Duplicate', test:'Test Alert', other:'Resolved Other'
+  }
+  let bars=''
+  cats.forEach((cat,i)=>{
+    const v=vals[CATS.indexOf(cat)]||0
+    const bH=Math.max(3,Math.round(v/maxVal*chartH))
+    const cx=padL+i*slotW+slotW/2
+    const bx=(cx-barW/2).toFixed(1)
+    const by=(topPad+chartH-bH).toFixed(1)
+    bars+=`<rect x="${bx}" y="${by}" width="${barW.toFixed(1)}" height="${bH}" fill="${cat.color}" rx="3"/>`
+    bars+=`<text x="${cx.toFixed(1)}" y="${(topPad+chartH-bH-4).toFixed(1)}" text-anchor="middle" font-family="DM Mono,monospace" font-size="11" fill="${cat.color}" font-weight="600">${v}</text>`
+    const lname=LNAMES[cat.id]||cat.label
+    bars+=`<text transform="translate(${cx.toFixed(1)},${(topPad+chartH+8).toFixed(1)}) rotate(-45)" text-anchor="end" font-family="DM Sans,sans-serif" font-size="10" fill="#5A6478">${lname}</text>`
   })
-  return `<svg width="${svgW}" height="${svgH}" viewBox="0 0 ${svgW} ${svgH}">${bars}</svg>`
+  return `<svg width="100%" viewBox="0 0 ${svgW} ${svgH}" style="overflow:visible;display:block">${bars}</svg>`
 }
 
 // ─────────────────────────────────────────────
@@ -760,11 +779,48 @@ function openDrawer(siteId, monthIdx, periodLabel, vals){
     <div class="drawer-metric" style="max-width:150px"><div class="drawer-metric-val" style="font-size:14px;font-weight:600;color:var(--t2);line-height:1.3">${topCat.split('–')[0].trim()}</div><div class="drawer-metric-lbl">Top Category</div></div>
   `
 
+  renderDrawerMonths()
   renderDrawerBody()
 
   document.getElementById('drawer').classList.add('open')
   document.getElementById('drawer-overlay').classList.add('active')
   document.getElementById('main-content').classList.add('drawer-open')
+}
+
+function renderDrawerMonths(){
+  const el=document.getElementById('dr-months')
+  if(!el||!drawerState) return
+  const { siteId, monthIdx } = drawerState
+  el.innerHTML = MONTHS.map((m,i)=>{
+    const active = monthIdx===i
+    return `<button class="dr-month-pill${active?' active':''}" onclick="navigateDrawerMonth(${i})">${m.substring(0,3)}</button>`
+  }).join('')
+}
+
+function navigateDrawerMonth(monthIdx){
+  if(!drawerState) return
+  const { siteId } = drawerState
+  const vals = DATA[siteId][monthIdx]
+  const periodLabel = MONTHS[monthIdx]
+  drawerState = { ...drawerState, monthIdx, periodLabel, vals }
+  const site = SITES.find(s=>s.id===siteId)
+  const total = filteredSum(vals)
+  document.getElementById('dr-site-label').textContent = `${site.name} · ${periodLabel}`
+  document.getElementById('dr-title').textContent = `${site.name} — ${periodLabel}`
+  document.getElementById('dr-subtitle').textContent = `Total Incidents: ${total}`
+  const maxCatIdx=activeIdx().reduce((best,i)=>(vals[i]||0)>(vals[best]||0)?i:best, activeIdx()[0]??0)
+  const topCat=activeCats().length ? CATS[maxCatIdx].label : '—'
+  const critical=catActive['duress'] ? vals[0] : null
+  const critPct=total>0&&critical!==null ? Math.round(critical/total*100)+'%' : '—'
+  document.getElementById('dr-metrics').innerHTML = `
+    <div class="drawer-metric"><div class="drawer-metric-val">${total}</div><div class="drawer-metric-lbl">Total</div></div>
+    <div class="drawer-metric"><div class="drawer-metric-val" style="color:#C0385A">${critical!==null?critical:'—'}</div><div class="drawer-metric-lbl">Critical</div></div>
+    <div class="drawer-metric"><div class="drawer-metric-val" style="color:#C0385A">${critPct}</div><div class="drawer-metric-lbl">% Critical</div></div>
+    <div class="drawer-metric" style="max-width:150px"><div class="drawer-metric-val" style="font-size:14px;font-weight:600;color:var(--t2);line-height:1.3">${topCat.split('–')[0].trim()}</div><div class="drawer-metric-lbl">Top Category</div></div>
+  `
+  renderDrawerMonths()
+  renderDrawerBody()
+  renderBysite()
 }
 
 function closeDrawer(){
@@ -860,12 +916,10 @@ function renderDrawerBody(){
     html += `
       <div class="bld-item">
         <div class="bld-header${isOpen?' open':''}" onclick="toggleBld('${bld.id}')">
-          <div class="bld-header-left">
-            <div class="bld-header-top">
-              <span class="bld-caret">▶</span>
-              <span class="bld-name">${bld.name}</span>
-            </div>
-            <span class="bld-count" style="padding-left:26px">${filtBldTotal} incidents</span>
+          <div class="bld-header-top">
+            <span class="bld-caret">▶</span>
+            <span class="bld-name">${bld.name}</span>
+            <span class="bld-count">${filtBldTotal} incidents</span>
           </div>
           <div class="bld-barchart">${barChartSVG}</div>
         </div>
