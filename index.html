@@ -320,8 +320,8 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--t1);font-
     </div>
     <div class="drawer-close" onclick="closeDrawer()">✕</div>
   </div>
-  <div class="drawer-metrics" id="dr-metrics"></div>
   <div class="drawer-months" id="dr-months"></div>
+  <div class="drawer-metrics" id="dr-metrics"></div>
   <div class="drawer-body" id="dr-body"></div>
 </div>
 
@@ -729,15 +729,22 @@ function updateSitesLabel(){
 function buildBarChartSVG(vals, total){
   const cats = activeCats().filter(cat => (vals[CATS.indexOf(cat)]||0) > 0)
   if(cats.length === 0 || total === 0) return ''
-  const padL=10, padR=10, topPad=18, chartH=72, labelArea=80
-  const svgW=580, svgH=topPad+chartH+labelArea
+  const padL=10, padR=10, topPad=20, chartH=72, lineH=13, maxLines=2
+  const labelArea = lineH * maxLines + 6
+  const svgW=560, svgH=topPad+chartH+labelArea
   const slotW=(svgW-padL-padR)/cats.length
-  const barW=Math.min(52, slotW*0.62)
+  const barW=Math.min(52, slotW*0.60)
   const maxVal=Math.max(...cats.map(cat=>vals[CATS.indexOf(cat)]||0))
-  const LNAMES={
-    duress:'Duress', nonduress:'Non-duress',
-    itest_l:'Test (light)', itest_d:'Intentional test',
-    dup:'Duplicate', test:'Test Alert', other:'Resolved Other'
+  const chartBottom=topPad+chartH
+  // Explicit 2-line splits for labels that are too wide to fit in one line
+  const LLINES={
+    duress:    ['Duress'],
+    nonduress: ['Non-duress'],
+    itest_l:   ['Test', '(light)'],
+    itest_d:   ['Intentional', 'test'],
+    dup:       ['Duplicate'],
+    test:      ['Test Alert'],
+    other:     ['Resolved', 'Other'],
   }
   let bars=''
   cats.forEach((cat,i)=>{
@@ -745,11 +752,15 @@ function buildBarChartSVG(vals, total){
     const bH=Math.max(3,Math.round(v/maxVal*chartH))
     const cx=padL+i*slotW+slotW/2
     const bx=(cx-barW/2).toFixed(1)
-    const by=(topPad+chartH-bH).toFixed(1)
+    const by=(chartBottom-bH).toFixed(1)
     bars+=`<rect x="${bx}" y="${by}" width="${barW.toFixed(1)}" height="${bH}" fill="${cat.color}" rx="3"/>`
-    bars+=`<text x="${cx.toFixed(1)}" y="${(topPad+chartH-bH-4).toFixed(1)}" text-anchor="middle" font-family="DM Mono,monospace" font-size="11" fill="${cat.color}" font-weight="600">${v}</text>`
-    const lname=LNAMES[cat.id]||cat.label
-    bars+=`<text transform="translate(${cx.toFixed(1)},${(topPad+chartH+8).toFixed(1)}) rotate(-45)" text-anchor="end" font-family="DM Sans,sans-serif" font-size="10" fill="#5A6478">${lname}</text>`
+    // Value number above bar
+    bars+=`<text x="${cx.toFixed(1)}" y="${(chartBottom-bH-4).toFixed(1)}" text-anchor="middle" font-family="DM Mono,monospace" font-size="11" fill="${cat.color}" font-weight="600">${v}</text>`
+    // Horizontal label — 1 or 2 lines, centered below bar
+    const lines=LLINES[cat.id]||[cat.label]
+    lines.forEach((line,li)=>{
+      bars+=`<text x="${cx.toFixed(1)}" y="${(chartBottom+lineH+li*lineH).toFixed(1)}" text-anchor="middle" font-family="DM Sans,sans-serif" font-size="10" fill="#5A6478">${line}</text>`
+    })
   })
   return `<svg width="100%" viewBox="0 0 ${svgW} ${svgH}" style="overflow:visible;display:block">${bars}</svg>`
 }
@@ -787,13 +798,18 @@ function openDrawer(siteId, monthIdx, periodLabel, vals){
   document.getElementById('main-content').classList.add('drawer-open')
 }
 
+// Fiscal year: Mar 2025 … Feb 2026
+const MONTH_YEAR_ORDER = [2,3,4,5,6,7,8,9,10,11,0,1]
+const MONTH_YEAR_MAP   = {0:2026,1:2026,2:2025,3:2025,4:2025,5:2025,6:2025,7:2025,8:2025,9:2025,10:2025,11:2025}
+function monthYearLabel(mi){ return `${MONTHS[mi].substring(0,3)} ${MONTH_YEAR_MAP[mi]}` }
+
 function renderDrawerMonths(){
   const el=document.getElementById('dr-months')
   if(!el||!drawerState) return
-  const { siteId, monthIdx } = drawerState
-  el.innerHTML = MONTHS.map((m,i)=>{
-    const active = monthIdx===i
-    return `<button class="dr-month-pill${active?' active':''}" onclick="navigateDrawerMonth(${i})">${m.substring(0,3)}</button>`
+  const { monthIdx } = drawerState
+  el.innerHTML = MONTH_YEAR_ORDER.map(mi=>{
+    const active = monthIdx===mi
+    return `<button class="dr-month-pill${active?' active':''}" onclick="navigateDrawerMonth(${mi})">${monthYearLabel(mi)}</button>`
   }).join('')
 }
 
@@ -801,7 +817,7 @@ function navigateDrawerMonth(monthIdx){
   if(!drawerState) return
   const { siteId } = drawerState
   const vals = DATA[siteId][monthIdx]
-  const periodLabel = MONTHS[monthIdx]
+  const periodLabel = monthYearLabel(monthIdx)
   drawerState = { ...drawerState, monthIdx, periodLabel, vals }
   const site = SITES.find(s=>s.id===siteId)
   const total = filteredSum(vals)
