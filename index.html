@@ -142,6 +142,10 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--t1);font-si
 .expand-btn.open .tri{transform:rotate(90deg)}
 .inc-table tr.subrow td{background:var(--bg)}
 .inc-table tr.subrow td:first-child{padding-left:34px;color:var(--t2);font-size:11px}
+.inc-table tr.subrow-l2 td{background:color-mix(in srgb,var(--bg) 60%,var(--surface) 40%)}
+.inc-table tr.subrow-l2 td:first-child{padding-left:52px;color:var(--t2);font-size:11px}
+.inc-table tr.subrow-l3 td{background:var(--surface)}
+.inc-table tr.subrow-l3 td:first-child{padding-left:70px;color:var(--t3);font-size:11px}
 .inc-table td.num{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--t2)}
 .inc-table td.num.bold{font-weight:600;color:var(--t1);font-size:12px}
 
@@ -1418,25 +1422,57 @@ document.addEventListener('mousemove',e=>{ if(document.getElementById('tooltip')
 // TABLE
 // ─────────────────────────────────────────────
 const TCOLS=[{key:'duress',label:'Duress'},{key:'nonduress',label:'Non-duress'},{key:'itest_l',label:'Int. test (light)'},{key:'itest_d',label:'Int. test'},{key:'dup',label:'Duplicate'},{key:'test',label:'Test Alert'},{key:'other',label:'Resolved Other'}]
-let tableExpandState={}
+let tableExpandState={}, tableBldState={}, tableFloorState={}
 function siteYearCatTotals(id){ return CATS.map((_,ci)=>DATA[id].reduce((s,mo)=>s+(mo[ci]||0),0)) }
 function renderIncidentsTable(){
   const as=activeSites(), thead=document.getElementById('inc-thead'), tbody=document.getElementById('inc-tbody')
   if(!thead||!tbody) return
-  thead.innerHTML=`<tr><th style="min-width:160px">Site</th><th>Total</th>${TCOLS.map(c=>`<th style="min-width:90px">${c.label}</th>`).join('')}</tr>`
+  thead.innerHTML=`<tr><th style="min-width:200px">Site</th><th>Total</th>${TCOLS.map(c=>`<th style="min-width:90px">${c.label}</th>`).join('')}</tr>`
   if(!as.length){ tbody.innerHTML=`<tr><td colspan="${2+TCOLS.length}" style="text-align:center;padding:32px;color:var(--t3)">No sites selected</td></tr>`; return }
-  const rows=as.map(s=>{ const cats=siteYearCatTotals(s.id); return {site:s,cats,total:cats.reduce((a,b)=>a+b,0),monthRows:MONTHS.map((m,mi)=>({label:m+' 2025',cats:DATA[s.id][mi],total:DATA[s.id][mi].reduce((a,b)=>a+b,0)}))} })
+  const rows=as.map(s=>{ const cats=siteYearCatTotals(s.id); return {site:s,cats,total:cats.reduce((a,b)=>a+b,0)} })
   const gc=CATS.map((_,ci)=>rows.reduce((s,r)=>s+r.cats[ci],0)), gt=gc.reduce((a,b)=>a+b,0)
   const numCell=(v,bold=false)=>v?`<td class="num${bold?' bold':''}">${v}</td>`:`<td class="num" style="color:var(--border2)">—</td>`
   let html=`<tr class="total-row"><td style="font-weight:600">Total</td>${numCell(gt,true)}${gc.map(v=>numCell(v)).join('')}</tr>`
   rows.forEach(r=>{
     const ex=!!tableExpandState[r.site.id]
     html+=`<tr><td><button class="expand-btn${ex?' open':''}" onclick="toggleTableRow('${r.site.id}')"><span class="tri">▶</span>${r.site.name}</button></td>${numCell(r.total,true)}${r.cats.map(v=>numCell(v)).join('')}</tr>`
-    if(ex) r.monthRows.forEach(mr=>{ if(mr.total) html+=`<tr class="subrow"><td>${mr.label}</td>${numCell(mr.total)}${mr.cats.map(v=>numCell(v)).join('')}</tr>` })
+    if(ex){
+      const struct=DRILLDOWN_STRUCTURE[r.site.id]
+      if(!struct) return
+      const bldAreaCounts=struct.buildings.map(b=>b.floors.reduce((s,f)=>s+f.areas.length,0))
+      const bldTotalAreas=bldAreaCounts.reduce((a,b)=>a+b,0)
+      struct.buildings.forEach((bld,bi)=>{
+        const bldFrac=bldAreaCounts[bi]/bldTotalAreas
+        const bldTotal=Math.round(r.total*bldFrac)
+        const bldDist=bld.floors.flatMap(f=>f.areas).reduce((acc,a)=>a.dist.map((d,i)=>acc[i]+d),new Array(CATS.length).fill(0))
+        const bldCats=distToVals(bldDist,bldTotal)
+        const bldKey=r.site.id+'|'+bld.id, bldEx=!!tableBldState[bldKey]
+        html+=`<tr class="subrow"><td><button class="expand-btn${bldEx?' open':''}" onclick="toggleTableBld('${r.site.id}','${bld.id}')"><span class="tri">▶</span>${bld.name}</button></td>${numCell(bldTotal)}${bldCats.map(v=>numCell(v)).join('')}</tr>`
+        if(bldEx){
+          const bldAreaTotal=bld.floors.reduce((s,f)=>s+f.areas.length,0)
+          bld.floors.forEach(fl=>{
+            const flTotal=Math.round(bldTotal*(fl.areas.length/bldAreaTotal))
+            const flDist=fl.areas.reduce((acc,a)=>a.dist.map((d,i)=>acc[i]+d),new Array(CATS.length).fill(0))
+            const flCats=distToVals(flDist,flTotal)
+            const flKey=r.site.id+'|'+bld.id+'|'+fl.id, flEx=!!tableFloorState[flKey]
+            html+=`<tr class="subrow subrow-l2"><td><button class="expand-btn${flEx?' open':''}" onclick="toggleTableFloor('${r.site.id}','${bld.id}','${fl.id}')"><span class="tri">▶</span>${fl.name}</button></td>${numCell(flTotal)}${flCats.map(v=>numCell(v)).join('')}</tr>`
+            if(flEx){
+              fl.areas.forEach(area=>{
+                const aTotal=Math.round(flTotal/fl.areas.length)
+                const aCats=distToVals(area.dist,aTotal)
+                html+=`<tr class="subrow subrow-l3"><td>${area.name}</td>${numCell(aTotal)}${aCats.map(v=>numCell(v)).join('')}</tr>`
+              })
+            }
+          })
+        }
+      })
+    }
   })
   tbody.innerHTML=html
 }
 function toggleTableRow(id){ tableExpandState[id]=!tableExpandState[id]; renderIncidentsTable() }
+function toggleTableBld(siteId,bldId){ const k=siteId+'|'+bldId; tableBldState[k]=!tableBldState[k]; renderIncidentsTable() }
+function toggleTableFloor(siteId,bldId,flId){ const k=siteId+'|'+bldId+'|'+flId; tableFloorState[k]=!tableFloorState[k]; renderIncidentsTable() }
 
 // ─────────────────────────────────────────────
 // TAB & GRAN
