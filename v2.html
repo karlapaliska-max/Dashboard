@@ -840,10 +840,8 @@ function toggleTableFloor(siteId,bldId,flId){const k=siteId+'|'+bldId+'|'+flId;t
 // DRILLDOWN DRAWER
 // ─────────────────────────────────────────────
 let drawerState=null, expandedBldgs={}, expandedFloors={}
-const MONTH_YEAR_ORDER=[2,3,4,5,6,7,8,9,10,11,0,1]
-const MONTH_YEAR_MAP={0:2026,1:2026,2:2025,3:2025,4:2025,5:2025,6:2025,7:2025,8:2025,9:2025,10:2025,11:2025}
-const MONTHS=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec']
-function monthYearLabel(mi){ return `${MONTHS[mi]} ${MONTH_YEAR_MAP[mi]}` }
+const MONTH_YEAR_ORDER=MO_ORDER
+function monthYearLabel(mi){ return MO_LABELS[MO_ORDER.indexOf(mi)] }
 
 function openSiteDrawer(siteId){
   // Default to most recent month (Jan 2026)
@@ -1078,3 +1076,4 @@ renderIncidentsTable()
 <!-- bust 1773272053 -->
 <!-- bust 1773272418 -->
 <!-- bust 1773272799 -->
+<!-- bust 1773273143 -->
