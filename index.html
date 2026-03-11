@@ -1177,7 +1177,7 @@ function updateKPIs(){
   const noData=v=>{ document.getElementById(v+'-val').textContent='—'; document.getElementById(v+'-sub').textContent='No sites selected' }
   if(!as.length){ ['kpi-trend','kpi-most','kpi-inc','kpi-drop','kpi-spike'].forEach(noData); return }
 
-  const {curr,prev,totalCurr,totalPrev,label,hasPrev,spike}=securityPeriods()
+  const {curr,prev,totalCurr,totalPrev,label,hasPrev,spike,currMis}=securityPeriods()
 
   // 1. Trend
   const trendEl=document.getElementById('kpi-trend-val')
