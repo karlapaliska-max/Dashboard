@@ -803,6 +803,7 @@ function buildBarChartSVG(vals, total){
 // DRAWER
 // ─────────────────────────────────────────────
 function openDrawer(siteId, monthIdx, periodLabel, vals){
+  hideTip()
   const site = SITES.find(s=>s.id===siteId)
   const total = filteredSum(vals)
   const isNewContext = !drawerState || drawerState.siteId!==siteId || drawerState.monthIdx!==monthIdx
