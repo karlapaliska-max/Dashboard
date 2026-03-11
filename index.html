@@ -464,7 +464,7 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--t1);font-si
       <div id="panel-timeline" class="panel">
         <div class="card">
           <div class="card-head"><div class="card-head-l"><h3>Incidents Over Time</h3></div></div>
-          <div class="area-wrap"><svg id="tl-svg" viewBox="0 0 960 260" width="100%" style="display:block;overflow:visible"></svg></div>
+          <div class="area-wrap"><svg id="tl-svg" width="100%" style="display:block;overflow:visible"></svg></div>
           <div id="tl-empty" style="display:none" class="empty-state"><strong>No data to show</strong>Adjust your filters above</div>
           <div class="legend" id="tl-legend"></div>
         </div>
@@ -1104,7 +1104,7 @@ function renderTimeline(){
   if(!ac.length||!as.length){ svg.style.display='none'; emptyEl.style.display='block'; return }
   svg.style.display='block'; emptyEl.style.display='none'
   const monthly=timelineMonthlyTotals(), maxVal=Math.max(...monthly.map(mo=>activeIdx().reduce((s,i)=>s+(mo[i]||0),0)),1)
-  const niceMax=Math.ceil(maxVal/50)*50, W=960,H=340,PL=52,PR=16,PT=16,PB=46
+  const niceMax=Math.ceil(maxVal/50)*50, W=Math.max((svg.parentElement.offsetWidth||840)-40,400),H=340,PL=52,PR=16,PT=16,PB=46
   const cW=W-PL-PR,cH=H-PT-PB,n=12, xOf=i=>PL+(i/(n-1))*cW, yOf=v=>PT+cH-(v/niceMax)*cH
   let defs='<defs>', paths='', cumul=new Array(n).fill(0)
   ;[...activeIdx()].reverse().forEach(ci=>{
@@ -1125,7 +1125,9 @@ function renderTimeline(){
   for(let i=1;i<n-1;i++) grid+=`<line x1="${xOf(i).toFixed(1)}" y1="${PT}" x2="${xOf(i).toFixed(1)}" y2="${PT+cH}" stroke="#E4E7ED" stroke-width="1" stroke-dasharray="3,4"/>`
   const mLabels=['Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec','Jan','Feb']
   const xlabels=mLabels.map((m,i)=>`<text x="${xOf(i).toFixed(1)}" y="${(PT+cH+14).toFixed(1)}" fill="#9AA3B4" font-size="10" text-anchor="middle" font-family="JetBrains Mono">${m}</text>`).join('')
-  svg.setAttribute('viewBox',`0 0 ${W} ${H}`)
+  svg.removeAttribute('viewBox')
+  svg.setAttribute('width', W)
+  svg.setAttribute('height', H)
   svg.innerHTML=defs+grid+paths+xlabels
   renderLegend('tl-legend')
 }
@@ -1151,6 +1153,7 @@ function renderAxis(max){
   })
 }
 window.addEventListener('resize',()=>renderAxis(_axisMax))
+;(()=>{const el=document.querySelector('.area-wrap');if(el&&window.ResizeObserver) new ResizeObserver(()=>renderTimeline()).observe(el)})()
 
 function renderBysite(){
   const inner=document.getElementById('chart-inner'), as=activeSites(), ac=activeCats()
