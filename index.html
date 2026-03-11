@@ -73,7 +73,7 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--t1);font-si
 .tab{padding:11px 18px 10px;font-size:12px;font-weight:600;color:var(--t3);cursor:pointer;border-bottom:2px solid transparent;margin-bottom:-1px;transition:all .14s}
 .tab:hover{color:var(--t2)}
 .tab.on{color:var(--acc);border-bottom-color:var(--acc)}
-.gran-toggle{display:flex;background:var(--bg);border:1px solid var(--border);border-radius:var(--radius);padding:2px;gap:2px;margin:8px 0}
+.gran-toggle{display:flex;background:var(--bg);border:1px solid var(--border);border-radius:var(--radius);padding:2px;gap:2px}
 .gb{padding:4px 12px;border-radius:6px;font-family:'Inter',sans-serif;font-size:11px;font-weight:600;cursor:pointer;border:none;background:transparent;color:var(--t2);transition:all .14s}
 .gb.on{background:var(--surface);color:var(--t1);box-shadow:0 1px 3px rgba(0,0,0,.08)}
 
@@ -446,10 +446,6 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--t1);font-si
         <div class="tab" onclick="switchTab('timeline',this)">Timeline</div>
         <div class="tab on" onclick="switchTab('bysite',this)">By Site</div>
       </div>
-      <div class="gran-toggle" id="gran-toggle">
-        <button class="gb on" onclick="setGranSite('month',this)">Month</button>
-        <button class="gb" onclick="setGranSite('year',this)">Year</button>
-      </div>
       <div class="gran-toggle" id="gran-timeline" style="display:none">
         <button class="gb" onclick="setGran(this)">Day</button>
         <button class="gb" onclick="setGran(this)">Week</button>
@@ -515,7 +511,7 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--t1);font-si
       <!-- By Site panel -->
       <div id="panel-bysite" class="panel on">
         <div class="card">
-          <div class="card-head"><div class="card-head-l"><h3>Incidents by Site</h3><p>Incident Breakdown by Site and Time.</p></div></div>
+          <div class="card-head"><div class="card-head-l"><h3>Incidents by Site</h3><p>Incident Breakdown by Site and Time.</p></div><div class="gran-toggle" id="gran-toggle"><button class="gb on" onclick="setGranSite('month',this)">Month</button><button class="gb" onclick="setGranSite('year',this)">Year</button></div></div>
           <div class="legend" id="bs-legend" style="border-bottom:1px solid var(--border)"></div>
           <div class="axis-header"><div class="axis-label-spacer"></div><div class="axis-track" id="axis-track"></div><div class="axis-right-spacer"></div></div>
           <div class="bysite-chart-outer"><div class="bysite-chart-inner" id="chart-inner"></div></div>
@@ -1549,7 +1545,6 @@ function renderAll(){
 function switchTab(id,el){
   document.querySelectorAll('.tab').forEach(t=>t.classList.remove('on')); el.classList.add('on')
   document.querySelectorAll('.panel').forEach(p=>p.classList.remove('on')); document.getElementById('panel-'+id).classList.add('on')
-  document.getElementById('gran-toggle').style.display=id==='bysite'?'flex':'none'
   document.getElementById('gran-timeline').style.display=id==='timeline'?'flex':'none'
   if(id==='bysite'){ renderBysite(); renderIncidentsTable() } else { renderTimeline(); renderTimelineTable() }
   updateKPIs()
