@@ -105,10 +105,10 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--t1);font-si
 .bysite-chart-outer{overflow-y:visible}
 .bysite-chart-inner{padding:0 20px 20px}
 .axis-header{display:flex;align-items:center;gap:10px;padding:8px 20px 0;position:sticky;top:0;background:var(--surface);z-index:10;border-bottom:1px solid var(--border)}
-.axis-label-spacer{width:140px;flex-shrink:0}
+.axis-label-spacer{width:164px;flex-shrink:0}
 .axis-track{flex:1;height:20px;position:relative}
 .axis-tick{position:absolute;font-family:'JetBrains Mono',monospace;font-size:9px;color:var(--t3);transform:translateX(-50%)}
-.axis-right-spacer{width:38px;flex-shrink:0}
+.axis-right-spacer{width:48px;flex-shrink:0}
 .period-group{margin-top:18px}
 .period-group:first-child{margin-top:12px}
 .period-label{font-size:14px;font-weight:600;color:var(--t1);margin-bottom:8px;padding-bottom:5px;border-bottom:1px solid var(--border);display:flex;justify-content:space-between}
@@ -473,10 +473,10 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--t1);font-si
       <!-- By Site panel -->
       <div id="panel-bysite" class="panel on">
         <div class="card">
-          <div class="card-head"><div class="card-head-l"><h3>Incidents by Site</h3><p>Click a site row to drill down into buildings, floors &amp; areas</p></div></div>
+          <div class="card-head"><div class="card-head-l"><h3>Incidents by Site</h3><p>Incident Breakdown by Site and Time.</p></div></div>
+          <div class="legend" id="bs-legend" style="border-bottom:1px solid var(--border)"></div>
           <div class="axis-header"><div class="axis-label-spacer"></div><div class="axis-track" id="axis-track"></div><div class="axis-right-spacer"></div></div>
           <div class="bysite-chart-outer"><div class="bysite-chart-inner" id="chart-inner"></div></div>
-          <div class="legend" id="bs-legend"></div>
         </div>
       </div>
 
@@ -1114,15 +1114,15 @@ function renderTimeline(){
     const top=upper.map((_,i)=>`${xOf(i).toFixed(1)},${yOf(upper[i]).toFixed(1)}`).join(' L')
     const bot=lower.map((_,i)=>`${xOf(n-1-i).toFixed(1)},${yOf(lower[n-1-i]).toFixed(1)}`).join(' L')
     defs+=`<linearGradient id="tg${ci}" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="${cat.color}" stop-opacity=".6"/><stop offset="100%" stop-color="${cat.color}" stop-opacity=".08"/></linearGradient>`
-    paths+=`<path d="M${top} L${bot} Z" fill="url(#tg${ci})" stroke="${cat.color}" stroke-width="1.5" stroke-linejoin="round"/>\n`
+    paths+=`<path d="M${top} L${bot} Z" fill="url(#tg${ci})" stroke="${cat.color}" stroke-width="0.5" stroke-linejoin="round"/>\n`
   })
   defs+='</defs>'
   let grid=''
-  for(let i=0;i<=5;i++){
-    const v=(i/5)*niceMax, y=yOf(v), isZ=i===0
-    grid+=`<line x1="${PL}" y1="${y.toFixed(1)}" x2="${W-PR}" y2="${y.toFixed(1)}" stroke="${isZ?'#C8D0DE':'#E4E7ED'}" stroke-width="${isZ?1.5:1}" stroke-dasharray="${isZ?'none':'3,4'}"/><text x="${PL-8}" y="${(y+3.5).toFixed(1)}" fill="#9AA3B4" font-size="10" text-anchor="end" font-family="JetBrains Mono">${Math.round(v)}</text>`
+  for(let i=1;i<=5;i++){
+    const v=(i/5)*niceMax, y=yOf(v)
+    grid+=`<line x1="${PL}" y1="${y.toFixed(1)}" x2="${W-PR}" y2="${y.toFixed(1)}" stroke="#E4E7ED" stroke-width="1" stroke-dasharray="3,4"/><text x="${PL-8}" y="${(y+3.5).toFixed(1)}" fill="#9AA3B4" font-size="10" text-anchor="end" font-family="JetBrains Mono">${Math.round(v)}</text>`
   }
-  for(let i=0;i<n;i++) grid+=`<line x1="${xOf(i).toFixed(1)}" y1="${PT}" x2="${xOf(i).toFixed(1)}" y2="${PT+cH}" stroke="#E4E7ED" stroke-width="1" stroke-dasharray="3,4"/>`
+  for(let i=1;i<n-1;i++) grid+=`<line x1="${xOf(i).toFixed(1)}" y1="${PT}" x2="${xOf(i).toFixed(1)}" y2="${PT+cH}" stroke="#E4E7ED" stroke-width="1" stroke-dasharray="3,4"/>`
   const mLabels=['Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec','Jan','Feb']
   const xlabels=mLabels.map((m,i)=>`<text x="${xOf(i).toFixed(1)}" y="${(PT+cH+14).toFixed(1)}" fill="#9AA3B4" font-size="10" text-anchor="middle" font-family="JetBrains Mono">${m}</text>`).join('')
   svg.setAttribute('viewBox',`0 0 ${W} ${H}`)
@@ -1139,7 +1139,18 @@ function getGlobalMax(){
   as.forEach(s=>{ if(granSite==='month') DATA[s.id].forEach(mo=>vals.push(filteredSum(mo))); else vals.push(filteredSum(yearData(s.id))) })
   return Math.max(...vals,1)
 }
-function renderAxis(max){ document.getElementById('axis-track').innerHTML=[0,.25,.5,.75,1].map(t=>`<span class="axis-tick" style="left:${t*100}%">${Math.round(t*max)}</span>`).join('') }
+let _axisMax=100
+function renderAxis(max){
+  _axisMax=max
+  requestAnimationFrame(()=>{
+    const track=document.getElementById('axis-track')
+    if(!track) return
+    const w=track.offsetWidth
+    if(!w) return
+    track.innerHTML=[0,.25,.5,.75,1].map(t=>`<span class="axis-tick" style="left:${(t*w).toFixed(1)}px">${Math.round(t*max)}</span>`).join('')
+  })
+}
+window.addEventListener('resize',()=>renderAxis(_axisMax))
 
 function renderBysite(){
   const inner=document.getElementById('chart-inner'), as=activeSites(), ac=activeCats()
@@ -1160,6 +1171,8 @@ function renderBysite(){
         <div class="site-row${isHL?' highlighted':''}" style="animation-delay:${ri*30}ms"
              data-site="${d.site.id}" data-month="${period.monthIdx}"
              onclick="handleSiteRowClick('${d.site.id}',${period.monthIdx},'${period.label}',${vj})"
+             onmouseenter="showTip(event,'${d.site.name}',${vj},${tot},'${period.label}')"
+             onmouseleave="hideTip()">
           <div class="site-row-label">${d.site.name}</div>
           <div class="site-row-bar">${segs}</div>
           <div class="site-row-total">${tot||'—'}</div>
