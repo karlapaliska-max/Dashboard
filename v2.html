@@ -50,10 +50,6 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--t1);font-si
 .card-head-l p{font-size:11px;color:var(--t3);margin-top:1px}
 .card-overflow{overflow:hidden;border-radius:0 0 var(--radius) var(--radius)}
 
-/* ══ GRAN TOGGLE ══ */
-.gran-toggle{display:flex;background:var(--bg);border:1px solid var(--border);border-radius:var(--radius);padding:2px;gap:2px}
-.gb{padding:4px 12px;border-radius:6px;font-family:'Inter',sans-serif;font-size:11px;font-weight:600;cursor:pointer;border:none;background:transparent;color:var(--t2);transition:all .14s}
-.gb.on{background:var(--surface);color:var(--t1);box-shadow:0 1px 3px rgba(0,0,0,.08)}
 
 /* ══ LOCATION CHIPS ══ */
 .loc-chips-bar{display:flex;flex-wrap:wrap;align-items:center;gap:8px;padding:12px 20px;border-bottom:1px solid var(--border);min-height:52px;position:relative}
@@ -66,8 +62,10 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--t1);font-si
 .add-loc-btn:hover{border-color:var(--acc);color:var(--acc);background:var(--acc-l)}
 
 /* ══ ADD SITE PANEL ══ */
-.add-site-panel{position:absolute;top:calc(100% + 2px);left:20px;width:360px;z-index:600;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);box-shadow:0 8px 28px rgba(0,0,0,.1);max-height:380px;display:flex;flex-direction:column;animation:dropIn .14s ease}
+.add-site-panel{position:fixed;width:320px;z-index:600;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);box-shadow:0 8px 28px rgba(0,0,0,.1);max-height:380px;display:flex;flex-direction:column;animation:dropIn .14s ease}
 .asp-header{display:flex;align-items:center;justify-content:space-between;padding:10px 14px;border-bottom:1px solid var(--border);font-size:12px;font-weight:600;color:var(--t1);flex-shrink:0}
+.asp-done{display:inline-flex;align-items:center;gap:4px;padding:4px 10px;border-radius:var(--radius);border:1px solid var(--acc);background:var(--acc);color:#fff;font-size:11px;font-weight:600;cursor:pointer;font-family:'Inter',sans-serif;transition:all .14s}
+.asp-done:hover{background:#1d4ed8}
 .asp-close{background:none;border:none;cursor:pointer;font-size:18px;color:var(--t3);line-height:1;padding:0;transition:color .12s}
 .asp-close:hover{color:var(--t1)}
 .asp-body{overflow-y:auto;flex:1;padding:4px 0}
@@ -89,11 +87,11 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--t1);font-si
 .trend-empty{padding:60px 20px;text-align:center;color:var(--t3);font-size:13px}
 
 /* ══ INCIDENT TYPE FILTERS ══ */
-.inc-type-filters{display:flex;flex-wrap:wrap;gap:6px;padding:10px 20px 14px;border-top:1px solid var(--border)}
-.filter-chip{display:inline-flex;align-items:center;gap:6px;padding:4px 10px;border-radius:20px;border:1.5px solid var(--border);background:var(--surface);font-size:11px;font-weight:500;color:var(--t3);cursor:pointer;transition:all .14s;font-family:'Inter',sans-serif}
-.filter-chip.on{border-color:var(--fc,var(--acc));background:color-mix(in srgb,var(--fc,var(--acc)) 8%,#fff 92%);color:var(--t1)}
-.filter-chip-dot{width:8px;height:8px;border-radius:50%;background:var(--fc);flex-shrink:0}
-.filter-chip:not(.on) .filter-chip-dot{opacity:.25}
+.inc-type-filters{display:flex;flex-wrap:wrap;gap:4px 20px;padding:10px 20px 14px;border-top:1px solid var(--border);align-items:center}
+.inc-type-filters-lbl{font-size:10px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:var(--t3);margin-right:4px;white-space:nowrap}
+.filter-check{display:inline-flex;align-items:center;gap:6px;font-size:12px;color:var(--t2);cursor:pointer;user-select:none;transition:color .12s}
+.filter-check:hover{color:var(--t1)}
+.filter-check input[type=checkbox]{width:13px;height:13px;accent-color:var(--acc);cursor:pointer;flex-shrink:0}
 
 /* ══ TOOLTIP ══ */
 .trend-tt{position:fixed;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:10px 14px;pointer-events:none;z-index:999;min-width:200px;box-shadow:0 4px 16px rgba(0,0,0,.08);display:none}
@@ -159,27 +157,13 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--t1);font-si
         <div class="card-head">
           <div class="card-head-l"><h3>Incidents by Site Trend</h3></div>
           <div style="display:flex;gap:8px;align-items:center">
-            <div class="gran-toggle" id="trend-gran">
-              <button class="gb" onclick="setTrendGran('day',this)">Day</button>
-              <button class="gb on" onclick="setTrendGran('month',this)">Month</button>
-              <button class="gb" onclick="setTrendGran('year',this)">Year</button>
-            </div>
             <button class="btn" onclick="saveTrend()">Save</button>
             <button class="btn primary" onclick="downloadTrendCSV()">↓ Download</button>
           </div>
         </div>
 
-        <!-- Chips bar + Add Site panel -->
-        <div style="position:relative">
-          <div class="loc-chips-bar" id="loc-chips-bar"></div>
-          <div class="add-site-panel" id="add-site-panel" style="display:none">
-            <div class="asp-header">
-              <span>Select Location</span>
-              <button class="asp-close" onclick="closeAddSite()">×</button>
-            </div>
-            <div class="asp-body" id="asp-body"></div>
-          </div>
-        </div>
+        <!-- Chips bar -->
+        <div class="loc-chips-bar" id="loc-chips-bar"></div>
 
         <!-- Chart SVG -->
         <div class="trend-wrap" id="trend-wrap">
@@ -202,6 +186,18 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--t1);font-si
     </div><!-- /content -->
   </div><!-- /main -->
 </div><!-- /shell -->
+
+<!-- Add Site panel (fixed, positioned by JS) -->
+<div class="add-site-panel" id="add-site-panel" style="display:none">
+  <div class="asp-header">
+    <span>Select Location</span>
+    <div style="display:flex;gap:6px;align-items:center">
+      <button class="asp-done" onclick="closeAddSite()">✓ Done</button>
+      <button class="asp-close" onclick="closeAddSite()">×</button>
+    </div>
+  </div>
+  <div class="asp-body" id="asp-body"></div>
+</div>
 
 <!-- Trend tooltip -->
 <div class="trend-tt" id="trend-tt"></div>
@@ -376,21 +372,8 @@ function getTrendData(){
   if(!trendLocations.length) return {xLabels:[],series:[]}
   let xLabels=[], series=trendLocations.map(loc=>({loc,values:[]}))
 
-  if(trendGran==='month'){
-    xLabels=MO_LABELS
-    MO_ORDER.forEach(mi=>series.forEach(s=>s.values.push(locationMonthValue(s.loc,mi))))
-  } else if(trendGran==='year'){
-    const quarters=[[2,3,4],[5,6,7],[8,9,10],[11,0,1]]
-    xLabels=["Q1 '25","Q2 '25","Q3 '25","Q4 '25-26"]
-    quarters.forEach(mis=>series.forEach(s=>s.values.push(mis.reduce((sum,mi)=>sum+locationMonthValue(s.loc,mi),0))))
-  } else {
-    // Day: show Feb 2026 (mi=1), 28 days
-    xLabels=Array.from({length:28},(_,i)=>(i%7===0)?`Feb ${i+1}`:'')
-    series.forEach(s=>{
-      const days=getDayValues(s.loc,1)
-      s.values=days
-    })
-  }
+  xLabels=MO_LABELS
+  MO_ORDER.forEach(mi=>series.forEach(s=>s.values.push(locationMonthValue(s.loc,mi))))
   return {xLabels,series}
 }
 
@@ -531,8 +514,20 @@ function renderLocChips(){
 function toggleAddSite(){
   addSiteOpen=!addSiteOpen
   const panel=document.getElementById('add-site-panel')
-  if(panel) panel.style.display=addSiteOpen?'flex':'none'
-  if(addSiteOpen) renderAddSitePanel()
+  const btn=document.getElementById('add-loc-btn')
+  if(!panel) return
+  if(addSiteOpen&&btn){
+    const r=btn.getBoundingClientRect()
+    panel.style.top=(r.bottom+6)+'px'
+    panel.style.left=r.left+'px'
+    // keep within viewport right edge
+    const panelW=320
+    if(r.left+panelW>window.innerWidth) panel.style.left=Math.max(8,window.innerWidth-panelW-8)+'px'
+    panel.style.display='flex'
+    renderAddSitePanel()
+  } else {
+    panel.style.display='none'
+  }
 }
 function closeAddSite(){
   addSiteOpen=false
@@ -607,7 +602,9 @@ function toggleAsdNode(key){
 
 function addLocation(type,siteId,bldId,flId,areaName){
   bldId=bldId||null; flId=flId||null; areaName=areaName||null
-  if(isLocAdded(type,siteId,bldId,flId,areaName)) return
+  // Toggle: if already in chart, remove the most recent instance
+  const existIdx=trendLocations.map((l,i)=>({l,i})).reverse().find(({l})=>l.type===type&&l.siteId===siteId&&l.bldId===bldId&&l.flId===flId&&l.areaName===areaName)
+  if(existIdx){trendLocations.splice(existIdx.i,1);renderLocChips();renderTrendChart();renderAddSitePanel();return}
   const usedColors=trendLocations.map(l=>l.color)
   const color=LOC_COLORS.find(c=>!usedColors.includes(c))||LOC_COLORS[trendLocations.length%LOC_COLORS.length]
   const site=SITES.find(s=>s.id===siteId)
@@ -634,25 +631,15 @@ function removeLocation(locId){
 function renderIncTypeFilters(){
   const el=document.getElementById('inc-type-filters')
   if(!el) return
-  el.innerHTML=CATS.map(c=>`
-    <button class="filter-chip${trendCatActive[c.id]?' on':''}" style="--fc:${c.color}" onclick="toggleIncFilter('${c.id}')">
-      <span class="filter-chip-dot"></span>${c.label}
-    </button>`).join('')
+  const labels=`<span class="inc-type-filters-lbl">Incident types</span>`
+  const checks=CATS.map(c=>`<label class="filter-check"><input type="checkbox"${trendCatActive[c.id]?' checked':''} onchange="toggleIncFilter('${c.id}',this.checked)">${c.label}</label>`).join('')
+  el.innerHTML=labels+checks
 }
-function toggleIncFilter(catId){
-  trendCatActive[catId]=!trendCatActive[catId]
-  renderIncTypeFilters(); renderTrendChart()
-}
-
-// ─────────────────────────────────────────────
-// GRAN TOGGLE
-// ─────────────────────────────────────────────
-function setTrendGran(mode,btn){
-  trendGran=mode
-  btn.closest('.gran-toggle').querySelectorAll('.gb').forEach(b=>b.classList.remove('on'))
-  btn.classList.add('on')
+function toggleIncFilter(catId,checked){
+  trendCatActive[catId]=checked
   renderTrendChart()
 }
+
 
 // ─────────────────────────────────────────────
 // SAVE / DOWNLOAD
