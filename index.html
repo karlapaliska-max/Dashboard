@@ -443,8 +443,8 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--t1);font-si
     <!-- Tabs -->
     <div class="tabs-bar">
       <div class="tabs">
-        <div class="tab" onclick="switchTab('timeline',this)">Timeline</div>
-        <div class="tab on" onclick="switchTab('bysite',this)">By Site</div>
+        <div class="tab on" onclick="switchTab('timeline',this)">Timeline</div>
+        <div class="tab" onclick="switchTab('bysite',this)">By Site</div>
       </div>
     </div>
 
@@ -481,7 +481,7 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--t1);font-si
       </div>
 
       <!-- Timeline panel -->
-      <div id="panel-timeline" class="panel">
+      <div id="panel-timeline" class="panel on">
         <div class="card">
           <div class="card-head"><div class="card-head-l"><h3>Incidents Over Time</h3></div></div>
           <div class="area-wrap"><svg id="tl-svg" width="100%" style="display:block;overflow:visible"></svg></div>
@@ -504,7 +504,7 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--t1);font-si
       </div>
 
       <!-- By Site panel -->
-      <div id="panel-bysite" class="panel on">
+      <div id="panel-bysite" class="panel">
         <div class="card">
           <div class="card-head"><div class="card-head-l"><h3>Incidents by Site</h3><p>Incident Breakdown by Site and Time.</p></div><div class="gran-toggle" id="gran-toggle"><button class="gb on" onclick="setGranSite('month',this)">Month</button><button class="gb" onclick="setGranSite('year',this)">Year</button></div></div>
           <div class="legend" id="bs-legend" style="border-bottom:1px solid var(--border)"></div>
@@ -1551,7 +1551,7 @@ function setGran(btn){ btn.closest('.gran-toggle').querySelectorAll('.gb').forEa
 // INIT
 // ─────────────────────────────────────────────
 buildTypesDD(); buildSitesDD()
-renderBysite(); updateKPIs(); renderIncidentsTable(); renderTimelineTable()
+renderTimeline(); renderTimelineTable(); updateKPIs(); renderIncidentsTable()
 </script>
 </body>
 </html>
