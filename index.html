@@ -1104,7 +1104,7 @@ function renderTimeline(){
   if(!ac.length||!as.length){ svg.style.display='none'; emptyEl.style.display='block'; return }
   svg.style.display='block'; emptyEl.style.display='none'
   const monthly=timelineMonthlyTotals(), maxVal=Math.max(...monthly.map(mo=>activeIdx().reduce((s,i)=>s+(mo[i]||0),0)),1)
-  const niceMax=Math.ceil(maxVal/50)*50, W=960,H=420,PL=52,PR=16,PT=16,PB=46
+  const niceMax=Math.ceil(maxVal/50)*50, W=960,H=340,PL=52,PR=16,PT=16,PB=46
   const cW=W-PL-PR,cH=H-PT-PB,n=12, xOf=i=>PL+(i/(n-1))*cW, yOf=v=>PT+cH-(v/niceMax)*cH
   let defs='<defs>', paths='', cumul=new Array(n).fill(0)
   ;[...activeIdx()].reverse().forEach(ci=>{
