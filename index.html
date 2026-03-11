@@ -446,11 +446,6 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--t1);font-si
         <div class="tab" onclick="switchTab('timeline',this)">Timeline</div>
         <div class="tab on" onclick="switchTab('bysite',this)">By Site</div>
       </div>
-      <div class="gran-toggle" id="gran-timeline" style="display:none">
-        <button class="gb" onclick="setGran(this)">Day</button>
-        <button class="gb" onclick="setGran(this)">Week</button>
-        <button class="gb on" onclick="setGran(this)">Month</button>
-      </div>
     </div>
 
     <div class="content" id="main-content">
@@ -1545,7 +1540,7 @@ function renderAll(){
 function switchTab(id,el){
   document.querySelectorAll('.tab').forEach(t=>t.classList.remove('on')); el.classList.add('on')
   document.querySelectorAll('.panel').forEach(p=>p.classList.remove('on')); document.getElementById('panel-'+id).classList.add('on')
-  document.getElementById('gran-timeline').style.display=id==='timeline'?'flex':'none'
+
   if(id==='bysite'){ renderBysite(); renderIncidentsTable() } else { renderTimeline(); renderTimelineTable() }
   updateKPIs()
 }
