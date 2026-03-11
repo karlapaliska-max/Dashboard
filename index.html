@@ -1242,7 +1242,8 @@ function renderBysite(){
         <div class="site-row${isHL?' highlighted':''}" style="animation-delay:${ri*30}ms"
              data-site="${d.site.id}" data-month="${period.monthIdx}"
              onclick="handleSiteRowClick('${d.site.id}',${period.monthIdx},'${period.label}',${vj})"
-             >
+             onmouseenter="showTip(event,'${d.site.name}',${vj},${tot},'${period.label}')"
+             onmouseleave="hideTip()">
           <div class="site-row-label">${d.site.name}</div>
           <div class="site-row-bar">${segs}</div>
           <div class="site-row-total">${tot||'—'}</div>
@@ -1265,6 +1266,7 @@ function handleSiteRowClick(siteId, monthIdx, periodLabel, vals){
 // TOOLTIP
 // ─────────────────────────────────────────────
 function showTip(e,name,vals,tot,period){
+  if(drawerState) return
   const tt=document.getElementById('tooltip')
   document.getElementById('tt-title').innerHTML=`<span style="font-size:10px;color:var(--t3);font-weight:400">${period} · </span>${name}`
   document.getElementById('tt-total-val').textContent=tot||0
