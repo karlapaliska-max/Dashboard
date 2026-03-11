@@ -603,21 +603,23 @@ function toggleAsdNode(key){
 
 function addLocation(type,siteId,bldId,flId,areaName){
   bldId=bldId||null; flId=flId||null; areaName=areaName||null
-  // Toggle: if already in chart, remove the most recent instance
-  const existIdx=trendLocations.map((l,i)=>({l,i})).reverse().find(({l})=>l.type===type&&l.siteId===siteId&&l.bldId===bldId&&l.flId===flId&&l.areaName===areaName)
-  if(existIdx){trendLocations.splice(existIdx.i,1);renderLocChips();renderTrendChart();renderAddSitePanel();return}
-  const usedColors=trendLocations.map(l=>l.color)
-  const color=LOC_COLORS.find(c=>!usedColors.includes(c))||LOC_COLORS[trendLocations.length%LOC_COLORS.length]
-  const site=SITES.find(s=>s.id===siteId)
-  let label=site.name
-  if(type!=='site'){
-    const st=DRILLDOWN_STRUCTURE[siteId]
-    const bld=st.buildings.find(b=>b.id===bldId)
-    if(type==='building') label=`${site.name} / ${bld.name}`
-    else if(type==='floor'){const fl=bld.floors.find(f=>f.id===flId);label=`${bld.name} / ${fl.name}`}
-    else if(type==='area') label=areaName
+  const idx=trendLocations.findIndex(l=>l.type===type&&l.siteId===siteId&&l.bldId===bldId&&l.flId===flId&&l.areaName===areaName)
+  if(idx!==-1){
+    trendLocations.splice(idx,1)
+  } else {
+    const usedColors=trendLocations.map(l=>l.color)
+    const color=LOC_COLORS.find(c=>!usedColors.includes(c))||LOC_COLORS[trendLocations.length%LOC_COLORS.length]
+    const site=SITES.find(s=>s.id===siteId)
+    let label=site.name
+    if(type!=='site'){
+      const st=DRILLDOWN_STRUCTURE[siteId]
+      const bld=st.buildings.find(b=>b.id===bldId)
+      if(type==='building') label=`${site.name} / ${bld.name}`
+      else if(type==='floor'){const fl=bld.floors.find(f=>f.id===flId);label=`${bld.name} / ${fl.name}`}
+      else if(type==='area') label=areaName
+    }
+    trendLocations.push({id:'loc_'+Date.now(),type,siteId,bldId,flId,areaName,label,color})
   }
-  trendLocations.push({id:'loc_'+Date.now(),type,siteId,bldId,flId,areaName,label,color})
   renderLocChips(); renderTrendChart(); renderAddSitePanel()
 }
 
@@ -751,3 +753,4 @@ renderIncidentsTable()
 <!-- cache-bust 1773271540 -->
 <!-- bust 1773271712 -->
 <!-- bust 1773271887 -->
+<!-- bust 1773272053 -->
