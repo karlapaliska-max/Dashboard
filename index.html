@@ -101,30 +101,49 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--t1);font-si
 .leg-i{display:flex;align-items:center;gap:6px;font-size:13px;color:var(--t2)}
 .leg-sw{width:10px;height:10px;border-radius:2px;flex-shrink:0}
 
-/* ══ BY SITE ══ */
-.bysite-chart-outer{overflow-y:visible}
-.bysite-chart-inner{padding:0 20px 20px}
-.axis-header{display:flex;align-items:center;gap:10px;padding:8px 20px 0;position:sticky;top:0;background:var(--surface);z-index:10;border-bottom:1px solid var(--border)}
-.axis-label-spacer{width:164px;flex-shrink:0}
-.axis-track{flex:1;height:20px;position:relative}
-.axis-tick{position:absolute;font-family:'JetBrains Mono',monospace;font-size:9px;color:var(--t3);transform:translateX(-50%)}
-.axis-right-spacer{width:48px;flex-shrink:0}
-.period-group{margin-top:18px}
-.period-group:first-child{margin-top:12px}
-.period-label{font-size:14px;font-weight:600;color:var(--t1);margin-bottom:8px;padding-bottom:5px;border-bottom:1px solid var(--border);display:flex;justify-content:space-between}
-.period-total{font-family:'JetBrains Mono',monospace;font-size:13px;color:var(--t3);font-weight:400}
-
-/* site row — clickable, highlightable */
-.site-row{display:flex;align-items:center;gap:10px;margin-bottom:5px;animation:fadeUp .2s ease forwards;opacity:0;border-radius:6px;padding:3px 4px;cursor:pointer;transition:background .14s}
+/* ══ BY SITE HIERARCHY ══ */
 @keyframes fadeUp{to{opacity:1}}
-.site-row:hover{background:var(--bg)}
-.site-row.highlighted{background:var(--acc-l);outline:2px solid var(--acc-m)}
-.site-row-label{width:160px;flex-shrink:0;font-size:14px;font-weight:500;color:var(--t2);text-align:right;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.site-row.highlighted .site-row-label{color:var(--acc);font-weight:600}
-.site-row-bar{flex:1;height:22px;background:var(--border);border-radius:3px;overflow:hidden;display:flex;position:relative}
-.site-row.highlighted .site-row-bar{box-shadow:0 0 0 2px var(--acc)}
+.bs-tree{padding:16px 20px 20px}
+.bs-site-section{margin-bottom:24px}
+.bs-site-section:last-child{margin-bottom:4px}
+.bs-site-label{font-size:14px;font-weight:600;color:var(--t1);display:flex;align-items:center;justify-content:space-between;padding-bottom:7px;border-bottom:1px solid var(--border);margin-bottom:8px}
+.bs-site-total{font-family:'JetBrains Mono',monospace;font-size:13px;color:var(--t3);font-weight:400}
+.bs-site-minibar{height:5px;display:flex;margin-bottom:12px;background:var(--border);border-radius:3px;overflow:hidden}
+.bs-bld{border:1px solid var(--border);border-radius:6px;overflow:hidden;margin-bottom:6px}
+.bs-bld:last-child{margin-bottom:0}
+.bs-bld-head{padding:9px 12px;display:flex;align-items:center;gap:8px;cursor:pointer;user-select:none;transition:background .12s;background:var(--bg)}
+.bs-bld-head:hover{background:var(--border)}
+.bs-bld-caret{font-size:8px;color:var(--t3);transition:transform .14s;display:inline-block;width:8px;flex-shrink:0}
+.bs-bld-head.open .bs-bld-caret{transform:rotate(90deg)}
+.bs-bld-icon{font-size:13px;line-height:1;flex-shrink:0}
+.bs-bld-name{font-size:12px;font-weight:600;color:var(--t2);flex:1;min-width:0}
+.bs-bld-bar{height:4px;flex:0 0 160px;display:flex;background:var(--border2);border-radius:2px;overflow:hidden}
+.bs-bld-bar-seg{height:100%}
+.bs-bld-count{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--t3);min-width:38px;text-align:right;flex-shrink:0}
+.bs-bld-body{display:none;padding:6px 12px 10px}
+.bs-bld-body.open{display:block}
+.bs-fl-item{margin-top:12px}
+.bs-fl-item:first-child{margin-top:0}
+.bs-fl-head{display:flex;align-items:center;gap:8px;padding:5px 8px;border-radius:5px;cursor:pointer;user-select:none;transition:background .12s}
+.bs-fl-head:hover{background:var(--bg)}
+.bs-fl-caret{font-size:8px;color:var(--t3);transition:transform .14s;display:inline-block;width:8px;flex-shrink:0}
+.bs-fl-head.open .bs-fl-caret{transform:rotate(90deg)}
+.bs-fl-name{font-size:12px;font-weight:500;color:var(--t1);flex:1;min-width:0}
+.bs-fl-bar{height:4px;flex:0 0 140px;display:flex;background:var(--border2);border-radius:2px;overflow:hidden}
+.bs-fl-bar-seg{height:100%}
+.bs-fl-count{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--t3);min-width:32px;text-align:right;flex-shrink:0}
+.bs-area-list{padding:4px 0 2px 16px;display:none}
+.bs-area-list.open{display:block}
+.bs-area-row{display:flex;align-items:center;gap:8px;padding:3px 8px;border-radius:4px;transition:background .12s;cursor:default}
+.bs-area-row:hover{background:var(--acc-l)}
+.bs-area-dot{width:5px;height:5px;border-radius:50%;background:var(--border2);flex-shrink:0}
+.bs-area-name{font-size:11px;color:var(--t2);flex:1;min-width:0}
+.bs-area-bar{height:4px;flex:0 0 120px;display:flex;background:var(--border2);border-radius:2px;overflow:hidden}
+.bs-area-bar-seg{height:100%}
+.bs-area-count{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--t3);min-width:28px;text-align:right;flex-shrink:0}
+
+/* legacy bar chart classes kept for drawer compatibility */
 .bar-seg{height:100%;transition:width .35s cubic-bezier(.4,0,.2,1)}
-.site-row-total{font-family:'JetBrains Mono',monospace;font-size:14px;font-weight:500;color:var(--t2);width:44px;text-align:right;flex-shrink:0}
 .empty-state{padding:48px;text-align:center;color:var(--t3)}
 .empty-state strong{display:block;font-size:14px;color:var(--t2);margin-bottom:4px}
 
@@ -470,20 +489,19 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--t1);font-si
         </div>
       </div>
 
+      <!-- Timeline table (only shown on Timeline tab) -->
+      <div class="card" id="incidents-table-card" style="display:none">
+        <div class="card-head"><div class="card-head-l"><h3>Site Breakdown</h3></div><div style="display:flex;gap:8px"><button class="btn">↓ CSV</button><button class="btn primary">↓ Excel</button></div></div>
+        <div class="inc-table-wrap"><table class="inc-table" id="inc-table"><thead id="inc-thead"></thead><tbody id="inc-tbody"></tbody></table></div>
+      </div>
+
       <!-- By Site panel -->
       <div id="panel-bysite" class="panel on">
         <div class="card">
-          <div class="card-head"><div class="card-head-l"><h3>Incidents by Site</h3><p>Incident Breakdown by Site and Time.</p></div></div>
+          <div class="card-head"><div class="card-head-l"><h3>Incidents by Site</h3><p>Expand a building to explore floors and areas.</p></div></div>
           <div class="legend" id="bs-legend" style="border-bottom:1px solid var(--border)"></div>
-          <div class="axis-header"><div class="axis-label-spacer"></div><div class="axis-track" id="axis-track"></div><div class="axis-right-spacer"></div></div>
-          <div class="bysite-chart-outer"><div class="bysite-chart-inner" id="chart-inner"></div></div>
+          <div id="bs-tree" class="bs-tree"></div>
         </div>
-      </div>
-
-      <!-- Table -->
-      <div class="card" id="incidents-table-card">
-        <div class="card-head"><div class="card-head-l"><h3>Site Breakdown</h3></div><div style="display:flex;gap:8px"><button class="btn">↓ CSV</button><button class="btn primary">↓ Excel</button></div></div>
-        <div class="inc-table-wrap"><table class="inc-table" id="inc-table"><thead id="inc-thead"></thead><tbody id="inc-tbody"></tbody></table></div>
       </div>
     </div>
   </div>
@@ -1223,33 +1241,50 @@ function renderAxis(max){
 window.addEventListener('resize',()=>renderAxis(_axisMax))
 ;(()=>{const el=document.querySelector('.area-wrap');if(el&&window.ResizeObserver) new ResizeObserver(()=>renderTimeline()).observe(el)})()
 
-function renderBysite(){
-  const inner=document.getElementById('chart-inner'), as=activeSites(), ac=activeCats()
-  if(!as.length||!ac.length){ inner.innerHTML=`<div class="empty-state"><strong>${!as.length?'No sites selected':'No incident types selected'}</strong>Adjust filters above</div>`; return }
-  const max=getGlobalMax(); renderAxis(max)
-  const periods=granSite==='month'
-    ?MONTHS.map((m,mi)=>({label:m,monthIdx:mi,data:as.map(s=>({site:s,vals:DATA[s.id][mi]}))}))
-    :[{label:'Feb 2025 – Feb 2026',monthIdx:-1,data:as.map(s=>({site:s,vals:yearData(s.id)}))}]
+let bsExpBlds = {}    // key: 'siteId_bldId'
+let bsExpFloors = {}  // key: 'siteId_bldId_flId'
+function bsToggleBld(key){ bsExpBlds[key]=!bsExpBlds[key]; renderBysite() }
+function bsToggleFloor(key){ bsExpFloors[key]=!bsExpFloors[key]; renderBysite() }
 
-  inner.innerHTML=periods.map(period=>{
-    const pTotal=period.data.reduce((s,d)=>s+filteredSum(d.vals),0)
-    const rows=period.data.map((d,ri)=>{
-      const tot=filteredSum(d.vals)
-      const segs=ac.map(cat=>{ const ci=CATS.indexOf(cat),v=d.vals[ci]||0; return v?`<div class="bar-seg" style="width:${(v/max*100).toFixed(2)}%;background:${cat.color}"></div>`:'' }).join('')
-      const vj=JSON.stringify(d.vals).replace(/"/g,'&quot;')
-      const isHL=drawerState&&drawerState.siteId===d.site.id&&drawerState.monthIdx===period.monthIdx
-      return `
-        <div class="site-row${isHL?' highlighted':''}" style="animation-delay:${ri*30}ms"
-             data-site="${d.site.id}" data-month="${period.monthIdx}"
-             onclick="handleSiteRowClick('${d.site.id}',${period.monthIdx},'${period.label}',${vj})"
-             onmouseenter="showTip(event,'${d.site.name}',${vj},${tot},'${period.label}')"
-             onmouseleave="hideTip()">
-          <div class="site-row-label">${d.site.name}</div>
-          <div class="site-row-bar">${segs}</div>
-          <div class="site-row-total">${tot||'—'}</div>
-        </div>`
+function renderBysite(){
+  const container=document.getElementById('bs-tree'), as=activeSites(), ac=activeCats()
+  if(!container) return
+  if(!as.length||!ac.length){
+    container.innerHTML=`<div class="empty-state"><strong>${!as.length?'No sites selected':'No incident types selected'}</strong>Adjust filters above</div>`
+    renderLegend('bs-legend'); return
+  }
+  container.innerHTML=as.map(site=>{
+    const siteVals=yearData(site.id), filtSiteTotal=filteredSum(siteVals)
+    const struct=DRILLDOWN_STRUCTURE[site.id]
+    const siteBarSegs=ac.map(cat=>{ const ci=CATS.indexOf(cat),v=siteVals[ci]||0,w=filtSiteTotal>0?(v/filtSiteTotal*100).toFixed(2):0; return `<div style="flex:0 0 ${w}%;background:${cat.color};height:100%"></div>` }).join('')
+    if(!struct) return `<div class="bs-site-section"><div class="bs-site-label"><span>${site.name}</span><span class="bs-site-total">${filtSiteTotal} incidents</span></div><div class="bs-site-minibar">${siteBarSegs}</div></div>`
+    const bldAreaCounts=struct.buildings.map(b=>b.floors.reduce((s,f)=>s+f.areas.length,0))
+    const totalAreas=bldAreaCounts.reduce((a,b)=>a+b,0)
+    const bldsHtml=struct.buildings.map((bld,bi)=>{
+      const bldKey=site.id+'_'+bld.id
+      const bldAgg=bld.floors.flatMap(f=>f.areas).reduce((acc,a)=>a.dist.map((d,i)=>acc[i]+d),new Array(7).fill(0))
+      const bldVals=distToVals(bldAgg,Math.round(filtSiteTotal*bldAreaCounts[bi]/totalAreas))
+      const filtBldTotal=filteredSum(bldVals), bldOpen=!!bsExpBlds[bldKey]
+      const bldBarSegs=ac.map(cat=>{ const ci=CATS.indexOf(cat),v=bldVals[ci]||0,w=filtBldTotal>0?(v/filtBldTotal*100).toFixed(2):0; return `<div class="bs-bld-bar-seg" style="width:${w}%;background:${cat.color}"></div>` }).join('')
+      const flsHtml=bld.floors.map(fl=>{
+        const flKey=bldKey+'_'+fl.id
+        const flAgg=fl.areas.reduce((acc,a)=>a.dist.map((d,i)=>acc[i]+d),new Array(7).fill(0))
+        const flFrac=fl.areas.length/bld.floors.reduce((s,f2)=>s+f2.areas.length,0)
+        const flVals=distToVals(flAgg,Math.round(filtBldTotal*flFrac))
+        const filtFlTotal=filteredSum(flVals), flOpen=!!bsExpFloors[flKey]
+        const flBarSegs=ac.map(cat=>{ const ci=CATS.indexOf(cat),v=flVals[ci]||0,w=filtFlTotal>0?(v/filtFlTotal*100).toFixed(2):0; return `<div class="bs-fl-bar-seg" style="width:${w}%;background:${cat.color}"></div>` }).join('')
+        const areasHtml=fl.areas.map(area=>{
+          const aVals=distToVals(area.dist,Math.round(filtFlTotal/fl.areas.length))
+          const filtATotal=filteredSum(aVals)
+          const aBarSegs=ac.map(cat=>{ const ci=CATS.indexOf(cat),v=aVals[ci]||0,w=filtATotal>0?(v/filtATotal*100).toFixed(2):0; return `<div class="bs-area-bar-seg" style="width:${w}%;background:${cat.color}"></div>` }).join('')
+          const avJson=JSON.stringify(aVals).replace(/"/g,'&quot;')
+          return `<div class="bs-area-row" onmouseenter="showAreaTip(event,'${area.name}',${avJson},${filtATotal})" onmouseleave="hideTip()"><div class="bs-area-dot"></div><div class="bs-area-name">${area.name}</div><div class="bs-area-bar">${aBarSegs}</div><div class="bs-area-count">${filtATotal}</div></div>`
+        }).join('')
+        return `<div class="bs-fl-item"><div class="bs-fl-head${flOpen?' open':''}" onclick="bsToggleFloor('${flKey}')"><span class="bs-fl-caret">▶</span><span class="bs-fl-name">${fl.name}</span><div class="bs-fl-bar">${flBarSegs}</div><span class="bs-fl-count">${filtFlTotal}</span></div><div class="bs-area-list${flOpen?' open':''}">${flOpen?areasHtml:''}</div></div>`
+      }).join('')
+      return `<div class="bs-bld"><div class="bs-bld-head${bldOpen?' open':''}" onclick="bsToggleBld('${bldKey}')"><span class="bs-bld-caret">▶</span><span class="bs-bld-icon">${bld.icon}</span><span class="bs-bld-name">${bld.name}</span><div class="bs-bld-bar">${bldBarSegs}</div><span class="bs-bld-count">${filtBldTotal}</span></div><div class="bs-bld-body${bldOpen?' open':''}">${bldOpen?flsHtml:''}</div></div>`
     }).join('')
-    return `<div class="period-group"><div class="period-label">${period.label}<span class="period-total">total ${pTotal}</span></div>${rows}</div>`
+    return `<div class="bs-site-section"><div class="bs-site-label"><span>${site.name}</span><span class="bs-site-total">${filtSiteTotal} incidents</span></div><div class="bs-site-minibar">${siteBarSegs}</div><div>${bldsHtml}</div></div>`
   }).join('')
   renderLegend('bs-legend')
 }
@@ -1313,8 +1348,9 @@ function renderAll(){
 function switchTab(id,el){
   document.querySelectorAll('.tab').forEach(t=>t.classList.remove('on')); el.classList.add('on')
   document.querySelectorAll('.panel').forEach(p=>p.classList.remove('on')); document.getElementById('panel-'+id).classList.add('on')
-  document.getElementById('gran-toggle').style.display=id==='bysite'?'flex':'none'
+  document.getElementById('gran-toggle').style.display='none'
   document.getElementById('gran-timeline').style.display=id==='timeline'?'flex':'none'
+  document.getElementById('incidents-table-card').style.display=id==='timeline'?'':'none'
   if(id==='bysite') renderBysite(); else renderTimeline()
   updateKPIs(); renderIncidentsTable()
 }
@@ -1325,6 +1361,7 @@ function setGran(btn){ btn.closest('.gran-toggle').querySelectorAll('.gb').forEa
 // INIT
 // ─────────────────────────────────────────────
 buildTypesDD(); buildSitesDD()
+document.getElementById('gran-toggle').style.display='none'
 renderBysite(); updateKPIs(); renderIncidentsTable()
 </script>
 </body>
