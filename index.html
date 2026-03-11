@@ -466,14 +466,14 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--t1);font-si
           <div class="kpi-val" id="kpi-most-val">—</div>
           <div class="kpi-sub" id="kpi-most-sub">—</div>
         </div>
-        <div class="kpi" style="--kpi-top:#F4845F">
-          <div class="kpi-lbl">Largest Increase</div>
+        <div class="kpi" id="kpi-inc" style="--kpi-top:#F4845F">
+          <div class="kpi-lbl" id="kpi-inc-lbl">Largest Increase</div>
           <div class="kpi-val sm" id="kpi-inc-val">—</div>
           <div class="kpi-sub" id="kpi-inc-sub">—</div>
           <div class="kpi-sub2" id="kpi-inc-sub2"></div>
         </div>
-        <div class="kpi" style="--kpi-top:#16A34A">
-          <div class="kpi-lbl">Largest Drop</div>
+        <div class="kpi" id="kpi-drop" style="--kpi-top:#16A34A">
+          <div class="kpi-lbl" id="kpi-drop-lbl">Largest Drop</div>
           <div class="kpi-val sm" id="kpi-drop-val">—</div>
           <div class="kpi-sub" id="kpi-drop-sub">—</div>
           <div class="kpi-sub2" id="kpi-drop-sub2"></div>
@@ -1165,7 +1165,7 @@ function securityPeriods(){
   if(cSlice){ for(let d=cSlice.d1;d<=cSlice.d2;d++) checkDay(cSlice.mi,d) }
   else{ currMis.forEach(mi=>{ const days=[31,28,31,30,31,30,31,31,30,31,30,31][mi]; for(let d=1;d<=days;d++) checkDay(mi,d) }) }
 
-  return {curr,prev,totalCurr,totalPrev,label,hasPrev,spike}
+  return {curr,prev,totalCurr,totalPrev,label,hasPrev,spike,currMis}
 }
 
 function updateKPIs(){
@@ -1194,8 +1194,14 @@ function updateKPIs(){
   document.getElementById('kpi-most-val').textContent=most.v
   document.getElementById('kpi-most-sub').textContent=most.site.name
 
-  // 3. Largest increase / 4. Largest drop
+  // 3 & 4. Largest Increase / Largest Drop — or fallback Peak / Quietest Month
+  const MSHORT_KPI=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec']
+  const MYR_KPI={0:2026,1:2026,2:2025,3:2025,4:2025,5:2025,6:2025,7:2025,8:2025,9:2025,10:2025,11:2025}
   if(hasPrev){
+    document.getElementById('kpi-inc-lbl').textContent='Largest Increase'
+    document.getElementById('kpi-inc').style.setProperty('--kpi-top','#F4845F')
+    document.getElementById('kpi-drop-lbl').textContent='Largest Drop'
+    document.getElementById('kpi-drop').style.setProperty('--kpi-top','#16A34A')
     const deltas=curr.map((d,i)=>({site:d.site,delta:d.v-(prev[i]?.v||0)}))
     const maxInc=deltas.reduce((a,b)=>a.delta>=b.delta?a:b)
     const maxDrop=deltas.reduce((a,b)=>a.delta<=b.delta?a:b)
@@ -1210,12 +1216,25 @@ function updateKPIs(){
     document.getElementById('kpi-drop-sub').textContent=maxDrop.site.name
     document.getElementById('kpi-drop-sub2').textContent=label
   } else {
-    document.getElementById('kpi-inc-val').textContent='—'; document.getElementById('kpi-inc-val').style.color=''
-    document.getElementById('kpi-inc-sub').textContent='Select a shorter range'
-    document.getElementById('kpi-inc-sub2').textContent=''
-    document.getElementById('kpi-drop-val').textContent='—'; document.getElementById('kpi-drop-val').style.color=''
-    document.getElementById('kpi-drop-sub').textContent='Select a shorter range'
-    document.getElementById('kpi-drop-sub2').textContent=''
+    // Fallback: Peak Month & Quietest Month within the current period
+    document.getElementById('kpi-inc-lbl').textContent='Peak Month'
+    document.getElementById('kpi-inc').style.setProperty('--kpi-top','#F4845F')
+    document.getElementById('kpi-drop-lbl').textContent='Quietest Month'
+    document.getElementById('kpi-drop').style.setProperty('--kpi-top','#16A34A')
+    const mTotals=currMis.map(mi=>({mi,total:as.reduce((s,site)=>s+DATA[site.id][mi][0],0)}))
+    const avg=mTotals.reduce((s,m)=>s+m.total,0)/mTotals.length
+    const peak=mTotals.reduce((a,b)=>a.total>=b.total?a:b)
+    const quiet=mTotals.reduce((a,b)=>a.total<=b.total?a:b)
+    const peakPct=Math.round((peak.total-avg)/avg*100)
+    const quietPct=Math.round((quiet.total-avg)/avg*100)
+    const incEl=document.getElementById('kpi-inc-val')
+    incEl.textContent=peak.total; incEl.style.color='#C0385A'
+    document.getElementById('kpi-inc-sub').textContent=`${MSHORT_KPI[peak.mi]} ${MYR_KPI[peak.mi]}`
+    document.getElementById('kpi-inc-sub2').textContent=`+${peakPct}% vs monthly avg`
+    const dropEl=document.getElementById('kpi-drop-val')
+    dropEl.textContent=quiet.total; dropEl.style.color='#16A34A'
+    document.getElementById('kpi-drop-sub').textContent=`${MSHORT_KPI[quiet.mi]} ${MYR_KPI[quiet.mi]}`
+    document.getElementById('kpi-drop-sub2').textContent=`${quietPct}% vs monthly avg`
   }
 
   // 5. Spike day
