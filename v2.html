@@ -722,6 +722,7 @@ function toggleTableFloor(siteId,bldId,flId){const k=siteId+'|'+bldId+'|'+flId;t
 // ─────────────────────────────────────────────
 document.addEventListener('click',e=>{
   if(!addSiteOpen) return
+  if(!document.body.contains(e.target)) return // target detached by innerHTML rebuild — ignore
   const panel=document.getElementById('add-site-panel')
   const btn=document.getElementById('add-loc-btn')
   if(panel&&!panel.contains(e.target)&&btn&&!btn.contains(e.target)) closeAddSite()
@@ -746,3 +747,4 @@ renderIncidentsTable()
 </body>
 </html>
 <!-- bust 1773270985 -->
+<!-- cache-bust 1773271540 -->
