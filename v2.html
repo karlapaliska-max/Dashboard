@@ -188,7 +188,7 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--t1);font-si
 </div><!-- /shell -->
 
 <!-- Add Site panel (fixed, positioned by JS) -->
-<div class="add-site-panel" id="add-site-panel" style="display:none">
+<div class="add-site-panel" id="add-site-panel" style="display:none" onclick="event.stopPropagation()">
   <div class="asp-header">
     <span>Select Location</span>
     <div style="display:flex;gap:6px;align-items:center">
@@ -748,3 +748,4 @@ renderIncidentsTable()
 </html>
 <!-- bust 1773270985 -->
 <!-- cache-bust 1773271540 -->
+<!-- bust 1773271712 -->
