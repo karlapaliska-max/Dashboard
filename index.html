@@ -497,6 +497,19 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--t1);font-si
           <div id="tl-empty" style="display:none" class="empty-state"><strong>No data to show</strong>Adjust your filters above</div>
           <div class="legend" id="tl-legend"></div>
         </div>
+        <div class="card" id="tl-table-card">
+          <div class="card-head">
+            <div class="card-head-l"><h3>Site Breakdown by Time</h3></div>
+            <div style="display:flex;gap:10px;align-items:center">
+              <div class="gran-toggle" id="tl-table-gran-toggle">
+                <button class="gb on" onclick="setTLTableGran('month',this)">Month</button>
+                <button class="gb" onclick="setTLTableGran('week',this)">Week</button>
+              </div>
+              <button class="btn">↓ CSV</button><button class="btn primary">↓ Excel</button>
+            </div>
+          </div>
+          <div class="inc-table-wrap"><table class="inc-table" id="tl-inc-table"><thead id="tl-inc-thead"></thead><tbody id="tl-inc-tbody"></tbody></table></div>
+        </div>
       </div>
 
       <!-- By Site panel -->
@@ -507,12 +520,10 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--t1);font-si
           <div class="axis-header"><div class="axis-label-spacer"></div><div class="axis-track" id="axis-track"></div><div class="axis-right-spacer"></div></div>
           <div class="bysite-chart-outer"><div class="bysite-chart-inner" id="chart-inner"></div></div>
         </div>
-      </div>
-
-      <!-- Table -->
-      <div class="card" id="incidents-table-card">
-        <div class="card-head"><div class="card-head-l"><h3>Site Breakdown</h3></div><div style="display:flex;gap:8px"><button class="btn">↓ CSV</button><button class="btn primary">↓ Excel</button></div></div>
-        <div class="inc-table-wrap"><table class="inc-table" id="inc-table"><thead id="inc-thead"></thead><tbody id="inc-tbody"></tbody></table></div>
+        <div class="card" id="incidents-table-card">
+          <div class="card-head"><div class="card-head-l"><h3>Site Breakdown</h3></div><div style="display:flex;gap:8px"><button class="btn">↓ CSV</button><button class="btn primary">↓ Excel</button></div></div>
+          <div class="inc-table-wrap"><table class="inc-table" id="inc-table"><thead id="inc-thead"></thead><tbody id="inc-tbody"></tbody></table></div>
+        </div>
       </div>
     </div>
   </div>
@@ -1475,11 +1486,63 @@ function toggleTableBld(siteId,bldId){ const k=siteId+'|'+bldId; tableBldState[k
 function toggleTableFloor(siteId,bldId,flId){ const k=siteId+'|'+bldId+'|'+flId; tableFloorState[k]=!tableFloorState[k]; renderIncidentsTable() }
 
 // ─────────────────────────────────────────────
+// TIMELINE TABLE (Site Breakdown by Time)
+// ─────────────────────────────────────────────
+let tlTableGran='month', tlTableExpandState={}
+const TL_MONTH_LABELS=MONTHS.map((m,mi)=>m+' 2025')
+// override Jan/Feb to 2026 (mi=0,1)
+TL_MONTH_LABELS[0]='January 2026'; TL_MONTH_LABELS[1]='February 2026'
+
+function tlWeekRows(siteId){
+  const DAYS=[31,28,31,30,31,30,31,31,30,31,30,31]
+  const MO_SHORT=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec']
+  const MO_YR=[2025,2026,2025,2025,2025,2025,2025,2025,2025,2025,2025,2025]
+  // reorder chronologically: Mar2025..Dec2025, Jan2026, Feb2026
+  const MIS=[2,3,4,5,6,7,8,9,10,11,0,1]
+  const rows=[]
+  MIS.forEach(mi=>{
+    const d=DAYS[mi], cats=DATA[siteId][mi]
+    const ranges=[[1,7],[8,14],[15,21],[22,d]]
+    ranges.forEach((r,wi)=>{
+      const frac=(r[1]-r[0]+1)/d
+      const wCats=cats.map(v=>Math.round(v*frac))
+      rows.push({label:`${MO_SHORT[mi]} W${wi+1} ${MO_YR[mi]}`,cats:wCats,total:wCats.reduce((a,b)=>a+b,0)})
+    })
+  })
+  return rows
+}
+function tlMonthRows(siteId){
+  const MIS=[2,3,4,5,6,7,8,9,10,11,0,1]
+  const MO=['January','February','March','April','May','June','July','August','September','October','November','December']
+  const MO_YR=[2025,2026,2025,2025,2025,2025,2025,2025,2025,2025,2025,2025]
+  return MIS.map(mi=>({label:`${MO[mi]} ${MO_YR[mi]}`,cats:DATA[siteId][mi],total:DATA[siteId][mi].reduce((a,b)=>a+b,0)}))
+}
+function renderTimelineTable(){
+  const as=activeSites(), thead=document.getElementById('tl-inc-thead'), tbody=document.getElementById('tl-inc-tbody')
+  if(!thead||!tbody) return
+  thead.innerHTML=`<tr><th style="min-width:200px">Site</th><th>Total</th>${TCOLS.map(c=>`<th style="min-width:90px">${c.label}</th>`).join('')}</tr>`
+  if(!as.length){ tbody.innerHTML=`<tr><td colspan="${2+TCOLS.length}" style="text-align:center;padding:32px;color:var(--t3)">No sites selected</td></tr>`; return }
+  const rows=as.map(s=>{ const cats=siteYearCatTotals(s.id); return {site:s,cats,total:cats.reduce((a,b)=>a+b,0)} })
+  const gc=CATS.map((_,ci)=>rows.reduce((s,r)=>s+r.cats[ci],0)), gt=gc.reduce((a,b)=>a+b,0)
+  const numCell=(v,bold=false)=>v?`<td class="num${bold?' bold':''}">${v}</td>`:`<td class="num" style="color:var(--border2)">—</td>`
+  let html=`<tr class="total-row"><td style="font-weight:600">Total</td>${numCell(gt,true)}${gc.map(v=>numCell(v)).join('')}</tr>`
+  rows.forEach(r=>{
+    const ex=!!tlTableExpandState[r.site.id]
+    const subRows=tlTableGran==='week'?tlWeekRows(r.site.id):tlMonthRows(r.site.id)
+    html+=`<tr><td><button class="expand-btn${ex?' open':''}" onclick="toggleTLTableRow('${r.site.id}')"><span class="tri">▶</span>${r.site.name}</button></td>${numCell(r.total,true)}${r.cats.map(v=>numCell(v)).join('')}</tr>`
+    if(ex) subRows.forEach(sr=>{ if(sr.total) html+=`<tr class="subrow"><td>${sr.label}</td>${numCell(sr.total)}${sr.cats.map(v=>numCell(v)).join('')}</tr>` })
+  })
+  tbody.innerHTML=html
+}
+function toggleTLTableRow(id){ tlTableExpandState[id]=!tlTableExpandState[id]; renderTimelineTable() }
+function setTLTableGran(mode,btn){ tlTableGran=mode; btn.closest('.gran-toggle').querySelectorAll('.gb').forEach(b=>b.classList.remove('on')); btn.classList.add('on'); renderTimelineTable() }
+
+// ─────────────────────────────────────────────
 // TAB & GRAN
 // ─────────────────────────────────────────────
 function renderAll(){
   const isTL=document.getElementById('panel-timeline').classList.contains('on')
-  if(isTL) renderTimeline(); else renderBysite()
+  if(isTL){ renderTimeline(); renderTimelineTable() } else renderBysite()
   updateKPIs(); renderIncidentsTable()
   if(drawerState) renderDrawerBody()
 }
@@ -1488,8 +1551,8 @@ function switchTab(id,el){
   document.querySelectorAll('.panel').forEach(p=>p.classList.remove('on')); document.getElementById('panel-'+id).classList.add('on')
   document.getElementById('gran-toggle').style.display=id==='bysite'?'flex':'none'
   document.getElementById('gran-timeline').style.display=id==='timeline'?'flex':'none'
-  if(id==='bysite') renderBysite(); else renderTimeline()
-  updateKPIs(); renderIncidentsTable()
+  if(id==='bysite'){ renderBysite(); renderIncidentsTable() } else { renderTimeline(); renderTimelineTable() }
+  updateKPIs()
 }
 function setGranSite(mode,btn){ granSite=mode; btn.closest('.gran-toggle').querySelectorAll('.gb').forEach(b=>b.classList.remove('on')); btn.classList.add('on'); renderBysite() }
 function setGran(btn){ btn.closest('.gran-toggle').querySelectorAll('.gb').forEach(b=>b.classList.remove('on')); btn.classList.add('on') }
@@ -1498,7 +1561,7 @@ function setGran(btn){ btn.closest('.gran-toggle').querySelectorAll('.gb').forEa
 // INIT
 // ─────────────────────────────────────────────
 buildTypesDD(); buildSitesDD()
-renderBysite(); updateKPIs(); renderIncidentsTable()
+renderBysite(); updateKPIs(); renderIncidentsTable(); renderTimelineTable()
 </script>
 </body>
 </html>
