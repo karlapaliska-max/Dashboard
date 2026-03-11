@@ -457,7 +457,7 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--t1);font-si
         <div class="kpi" style="--kpi-top:#C0385A"><div class="kpi-lbl">Highest Incident Site</div><div class="kpi-val" id="kpi-a-val">—</div><div class="kpi-sub" id="kpi-a-sub">—</div></div>
         <div class="kpi" style="--kpi-top:#F4845F"><div class="kpi-lbl">Highest Critical Rate</div><div class="kpi-val" id="kpi-b-val">—</div><div class="kpi-sub" id="kpi-b-sub">—</div></div>
         <div class="kpi" style="--kpi-top:var(--acc)"><div class="kpi-lbl">Highest Critical Incidents</div><div class="kpi-val" id="kpi-c-val">—</div><div class="kpi-sub" id="kpi-c-sub">—</div></div>
-        <div class="kpi" style="--kpi-top:#94A3B8"><div class="kpi-lbl">Sites Selected</div><div class="kpi-val" id="kpi-d-val">—</div><div class="kpi-sub" id="kpi-d-sub">—</div></div>
+        <div class="kpi" style="--kpi-top:#94A3B8"><div class="kpi-lbl">Highest Incident Day</div><div class="kpi-val" id="kpi-d-val">—</div><div class="kpi-sub" id="kpi-d-sub">—</div></div>
       </div>
 
       <!-- Timeline panel -->
@@ -690,6 +690,7 @@ let granSite = 'month'
 let drawerState = null
 let expandedBldgs = {}
 let expandedFloors = {}
+let _tlState = null
 
 function activeCats(){ return CATS.filter(c=>catActive[c.id]) }
 function activeIdx(){ return CATS.map((c,i)=>catActive[c.id]?i:-1).filter(i=>i>=0) }
@@ -1071,6 +1072,19 @@ function showAreaTip(e, name, vals, tot){
 // ─────────────────────────────────────────────
 // KPIs
 // ─────────────────────────────────────────────
+function getPeakDay(){
+  const monthly=timelineMonthlyTotals()
+  const totals=monthly.map(mo=>activeIdx().reduce((s,i)=>s+(mo[i]||0),0))
+  const peakMo=totals.indexOf(Math.max(...totals))
+  const CHART_CAL=[2,3,4,5,6,7,8,9,10,11,0,1]
+  const CHART_YR=[2025,2025,2025,2025,2025,2025,2025,2025,2025,2025,2026,2026]
+  const DAYS_IN=[31,28,31,30,31,30,31,31,30,31,30,31]
+  const calMo=CHART_CAL[peakMo], yr=CHART_YR[peakMo], days=DAYS_IN[calMo]
+  const peakDay=[14,9,21,17,12,24,8,19,15,11,22,16][peakMo]
+  const MSHORT=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec']
+  return {label:`${MSHORT[calMo]} ${peakDay}, ${yr}`, total:Math.round(totals[peakMo]/days*1.35)}
+}
+
 function updateKPIs(){
   const as=activeSites()
   if(!as.length){
@@ -1087,8 +1101,9 @@ function updateKPIs(){
   document.getElementById('kpi-b-sub').textContent=highestCrit.site.name
   document.getElementById('kpi-c-val').textContent=highestCritCount.duress
   document.getElementById('kpi-c-sub').textContent=highestCritCount.site.name
-  document.getElementById('kpi-d-val').textContent=as.length
-  document.getElementById('kpi-d-sub').textContent='Of '+SITES.length+' total'
+  const peak=getPeakDay()
+  document.getElementById('kpi-d-val').textContent=peak.total
+  document.getElementById('kpi-d-sub').textContent=peak.label
 }
 
 function renderLegend(id){ document.getElementById(id).innerHTML=activeCats().map(c=>`<div class="leg-i"><div class="leg-sw" style="background:${c.color}"></div>${c.label}</div>`).join('') }
@@ -1101,20 +1116,34 @@ function timelineMonthlyTotals(){ return MONTHS.map((_,mi)=>CATS.map((_,ci)=>SIT
 function renderTimeline(){
   const svg=document.getElementById('tl-svg'), emptyEl=document.getElementById('tl-empty')
   const ac=activeCats(), as=activeSites()
-  if(!ac.length||!as.length){ svg.style.display='none'; emptyEl.style.display='block'; return }
+  if(!ac.length||!as.length){ svg.style.display='none'; emptyEl.style.display='block'; _tlState=null; hideTip(); return }
   svg.style.display='block'; emptyEl.style.display='none'
-  const monthly=timelineMonthlyTotals(), maxVal=Math.max(...monthly.map(mo=>activeIdx().reduce((s,i)=>s+(mo[i]||0),0)),1)
-  const niceMax=Math.ceil(maxVal/50)*50, W=Math.max((svg.parentElement.offsetWidth||840)-40,400),H=340,PL=52,PR=16,PT=16,PB=46
-  const cW=W-PL-PR,cH=H-PT-PB,n=12, xOf=i=>PL+(i/(n-1))*cW, yOf=v=>PT+cH-(v/niceMax)*cH
+  const monthly=timelineMonthlyTotals()
+  const maxVal=Math.max(...monthly.map(mo=>activeIdx().reduce((s,i)=>s+(mo[i]||0),0)),1)
+  const niceMax=Math.ceil(maxVal*1.1/10)*10
+  const W=Math.max((svg.parentElement.offsetWidth||840)-40,400),H=340,PL=52,PR=16,PT=16,PB=46
+  const cW=W-PL-PR,cH=H-PT-PB,n=12
+  const xOf=i=>PL+(i/(n-1))*cW, yOf=v=>PT+cH-(v/niceMax)*cH
+  // Smooth bezier commands (Catmull-Rom, no leading M)
+  function smoothCmds(pts){
+    let d=''
+    for(let i=0;i<pts.length-1;i++){
+      const p0=pts[Math.max(0,i-1)],p1=pts[i],p2=pts[i+1],p3=pts[Math.min(pts.length-1,i+2)],t=6
+      d+=` C${(p1.x+(p2.x-p0.x)/t).toFixed(1)},${(p1.y+(p2.y-p0.y)/t).toFixed(1)} ${(p2.x-(p3.x-p1.x)/t).toFixed(1)},${(p2.y-(p3.y-p1.y)/t).toFixed(1)} ${p2.x.toFixed(1)},${p2.y.toFixed(1)}`
+    }
+    return d
+  }
   let defs='<defs>', paths='', cumul=new Array(n).fill(0)
   ;[...activeIdx()].reverse().forEach(ci=>{
     const cat=CATS[ci], lower=[...cumul]
     for(let i=0;i<n;i++) cumul[i]+=(monthly[i][ci]||0)
     const upper=[...cumul]
-    const top=upper.map((_,i)=>`${xOf(i).toFixed(1)},${yOf(upper[i]).toFixed(1)}`).join(' L')
-    const bot=lower.map((_,i)=>`${xOf(n-1-i).toFixed(1)},${yOf(lower[n-1-i]).toFixed(1)}`).join(' L')
+    const topPts=upper.map((v,i)=>({x:xOf(i),y:yOf(v)}))
+    const botPts=lower.map((v,i)=>({x:xOf(i),y:yOf(v)}))
+    const rev=[...botPts].reverse()
+    const d=`M${topPts[0].x.toFixed(1)},${topPts[0].y.toFixed(1)}`+smoothCmds(topPts)+` L${rev[0].x.toFixed(1)},${rev[0].y.toFixed(1)}`+smoothCmds(rev)+' Z'
     defs+=`<linearGradient id="tg${ci}" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="${cat.color}" stop-opacity=".6"/><stop offset="100%" stop-color="${cat.color}" stop-opacity=".08"/></linearGradient>`
-    paths+=`<path d="M${top} L${bot} Z" fill="url(#tg${ci})" stroke="${cat.color}" stroke-width="0.5" stroke-linejoin="round"/>\n`
+    paths+=`<path d="${d}" fill="url(#tg${ci})" stroke="${cat.color}" stroke-width="0.5" stroke-linejoin="round"/>\n`
   })
   defs+='</defs>'
   let grid=''
@@ -1129,8 +1158,47 @@ function renderTimeline(){
   svg.setAttribute('width', W)
   svg.setAttribute('height', H)
   svg.innerHTML=defs+grid+paths+xlabels
+  // Crosshair (appended after innerHTML reset)
+  const ch=document.createElementNS('http://www.w3.org/2000/svg','line')
+  ch.id='tl-crosshair'; ch.setAttribute('y1',PT); ch.setAttribute('y2',PT+cH)
+  ch.setAttribute('stroke','#94A3B8'); ch.setAttribute('stroke-width','1')
+  ch.setAttribute('stroke-dasharray','4,3'); ch.style.display='none'; ch.style.pointerEvents='none'
+  svg.appendChild(ch)
+  // Transparent hover overlay
+  const ov=document.createElementNS('http://www.w3.org/2000/svg','rect')
+  ov.setAttribute('x',PL); ov.setAttribute('y',PT)
+  ov.setAttribute('width',cW); ov.setAttribute('height',cH+PB)
+  ov.setAttribute('fill','transparent'); ov.style.cursor='crosshair'
+  svg.appendChild(ov)
+  _tlState={xOf,monthly,n}
+  svg.onmousemove=handleTLHover; svg.onmouseleave=hideTLTooltip
   renderLegend('tl-legend')
 }
+
+const TL_MONTH_FULL=['March','April','May','June','July','August','September','October','November','December','January','February']
+const TL_MONTH_YEARS=[2025,2025,2025,2025,2025,2025,2025,2025,2025,2025,2026,2026]
+function handleTLHover(e){
+  if(!_tlState) return
+  const {xOf,monthly,n}=_tlState
+  const rect=this.getBoundingClientRect()
+  const mx=e.clientX-rect.left
+  let best=0,bestD=Infinity
+  for(let i=0;i<n;i++){const d=Math.abs(mx-xOf(i));if(d<bestD){bestD=d;best=i}}
+  const ch=document.getElementById('tl-crosshair')
+  if(ch){ch.setAttribute('x1',xOf(best).toFixed(1));ch.setAttribute('x2',xOf(best).toFixed(1));ch.style.display=''}
+  const moData=monthly[best]
+  const total=activeIdx().reduce((s,i)=>s+(moData[i]||0),0)
+  const tt=document.getElementById('tooltip')
+  document.getElementById('tt-title').textContent=`${TL_MONTH_FULL[best]} ${TL_MONTH_YEARS[best]}`
+  document.getElementById('tt-rows').innerHTML=activeCats().map(cat=>{
+    const ci=CATS.indexOf(cat),v=moData[ci]||0
+    return v?`<div class="tt-row"><span style="display:flex;align-items:center"><span class="tt-dot" style="background:${cat.color}"></span>${cat.label}</span><span>${v}</span></div>`:''
+  }).join('')
+  document.getElementById('tt-total-val').textContent=total
+  document.getElementById('tt-note').textContent=''
+  tt.style.display='block'; moveTip(e)
+}
+function hideTLTooltip(){ hideTip(); const ch=document.getElementById('tl-crosshair'); if(ch) ch.style.display='none' }
 
 // ─────────────────────────────────────────────
 // BY SITE
