@@ -82,12 +82,14 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--t1);font-si
 .panel{display:none}.panel.on{display:block}
 
 /* ══ KPIs ══ */
-.kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:20px}
+.kpis{display:grid;grid-template-columns:repeat(5,1fr);gap:12px;margin-bottom:20px}
 .kpi{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:14px 16px;position:relative;overflow:hidden;--kpi-top:var(--acc)}
 .kpi::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;background:var(--kpi-top)}
 .kpi-lbl{font-size:11px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--t3);margin-bottom:4px}
-.kpi-val{font-family:'JetBrains Mono',monospace;font-size:26px;font-weight:500;color:var(--t1);line-height:1}
-.kpi-sub{font-size:13px;color:var(--t3);margin-top:4px}
+.kpi-val{font-family:'JetBrains Mono',monospace;font-size:24px;font-weight:500;color:var(--t1);line-height:1.1}
+.kpi-val.sm{font-size:18px}
+.kpi-sub{font-size:12px;color:var(--t2);margin-top:5px;font-weight:500}
+.kpi-sub2{font-size:11px;color:var(--t3);margin-top:2px}
 
 /* ══ CARD ══ */
 .card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);overflow:hidden;margin-bottom:18px}
@@ -454,10 +456,33 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--t1);font-si
     <div class="content" id="main-content">
       <!-- KPIs -->
       <div class="kpis">
-        <div class="kpi" style="--kpi-top:#C0385A"><div class="kpi-lbl">Highest Incident Site</div><div class="kpi-val" id="kpi-a-val">—</div><div class="kpi-sub" id="kpi-a-sub">—</div></div>
-        <div class="kpi" style="--kpi-top:#F4845F"><div class="kpi-lbl">Highest Critical Rate</div><div class="kpi-val" id="kpi-b-val">—</div><div class="kpi-sub" id="kpi-b-sub">—</div></div>
-        <div class="kpi" style="--kpi-top:var(--acc)"><div class="kpi-lbl">Highest Critical Incidents</div><div class="kpi-val" id="kpi-c-val">—</div><div class="kpi-sub" id="kpi-c-sub">—</div></div>
-        <div class="kpi" style="--kpi-top:#94A3B8"><div class="kpi-lbl">Highest Incident Day</div><div class="kpi-val" id="kpi-d-val">—</div><div class="kpi-sub" id="kpi-d-sub">—</div></div>
+        <div class="kpi" style="--kpi-top:#C0385A">
+          <div class="kpi-lbl" id="kpi-trend-lbl">Security Incidents</div>
+          <div class="kpi-val" id="kpi-trend-val">—</div>
+          <div class="kpi-sub" id="kpi-trend-sub">—</div>
+        </div>
+        <div class="kpi" style="--kpi-top:#C0385A">
+          <div class="kpi-lbl">Most Security Incidents</div>
+          <div class="kpi-val" id="kpi-most-val">—</div>
+          <div class="kpi-sub" id="kpi-most-sub">—</div>
+        </div>
+        <div class="kpi" style="--kpi-top:#F4845F">
+          <div class="kpi-lbl">Largest Increase</div>
+          <div class="kpi-val sm" id="kpi-inc-val">—</div>
+          <div class="kpi-sub" id="kpi-inc-sub">—</div>
+          <div class="kpi-sub2" id="kpi-inc-sub2"></div>
+        </div>
+        <div class="kpi" style="--kpi-top:#16A34A">
+          <div class="kpi-lbl">Largest Drop</div>
+          <div class="kpi-val sm" id="kpi-drop-val">—</div>
+          <div class="kpi-sub" id="kpi-drop-sub">—</div>
+          <div class="kpi-sub2" id="kpi-drop-sub2"></div>
+        </div>
+        <div class="kpi" style="--kpi-top:#94A3B8">
+          <div class="kpi-lbl">Spike Day</div>
+          <div class="kpi-val sm" id="kpi-spike-val">—</div>
+          <div class="kpi-sub" id="kpi-spike-sub">—</div>
+        </div>
       </div>
 
       <!-- Timeline panel -->
@@ -721,8 +746,12 @@ document.addEventListener('click',e=>{
     openDrop=null
   }
 })
+let dateRangeMode='year'
 function setQuickDate(r){
-  document.getElementById('f-date-label').textContent=r==='week'?'Last 7 days':r==='month'?'Last 30 days':r==='quarter'?'Last 90 days':'Last 12 months'
+  dateRangeMode=r
+  const labels={week:'Last 7 days',month:'Last 30 days',quarter:'Last 90 days',year:'Last 12 months'}
+  document.getElementById('f-date-label').textContent=labels[r]||'Last 12 months'
+  updateKPIs()
 }
 
 function buildTypesDD(){
@@ -1071,40 +1100,127 @@ function showAreaTip(e, name, vals, tot){
 }
 
 // ─────────────────────────────────────────────
-// KPIs
+// KPIs — security (duress) tiles
 // ─────────────────────────────────────────────
-function getPeakDay(){
-  const monthly=timelineMonthlyTotals()
-  const totals=monthly.map(mo=>activeIdx().reduce((s,i)=>s+(mo[i]||0),0))
-  const peakMo=totals.indexOf(Math.max(...totals))
-  const CHART_CAL=[2,3,4,5,6,7,8,9,10,11,0,1]
-  const CHART_YR=[2025,2025,2025,2025,2025,2025,2025,2025,2025,2025,2026,2026]
-  const DAYS_IN=[31,28,31,30,31,30,31,31,30,31,30,31]
-  const calMo=CHART_CAL[peakMo], yr=CHART_YR[peakMo], days=DAYS_IN[calMo]
-  const peakDay=[14,9,21,17,12,24,8,19,15,11,22,16][peakMo]
+
+// Deterministic seeded PRNG
+function _rng(seed){ seed=seed|0; return()=>{ seed^=seed<<13; seed^=seed>>17; seed^=seed<<5; return(seed>>>0)/4294967296 } }
+
+// Daily duress distribution for a site+month (deterministic)
+function dailyDuress(siteId, mi){
+  const rng=_rng(siteId.split('').reduce((a,c)=>a+c.charCodeAt(0),0)*97+mi*31)
+  const total=DATA[siteId][mi][0]
+  const days=[31,28,31,30,31,30,31,31,30,31,30,31][mi]
+  const w=Array.from({length:days},()=>0.3+rng()), ws=w.reduce((a,b)=>a+b,0)
+  let rem=total
+  return w.map((v,i)=>{ if(i===days-1) return Math.max(0,rem); const x=Math.round(v/ws*total); rem-=x; return Math.max(0,x) })
+}
+
+// Sum duress across full months for a site
+function siteDuressMonths(siteId, mis){ return mis.reduce((s,mi)=>s+DATA[siteId][mi][0],0) }
+// Sum duress for partial month (days d1..d2, 1-indexed)
+function siteDuressPartial(siteId, mi, d1, d2){ return dailyDuress(siteId,mi).slice(d1-1,d2).reduce((a,b)=>a+b,0) }
+
+// Returns period data based on current dateRangeMode
+function securityPeriods(){
+  const as=activeSites()
+  // Month indices: 0=Jan2026,1=Feb2026,2=Mar2025,...,11=Dec2025
+  const MYR={0:2026,1:2026,2:2025,3:2025,4:2025,5:2025,6:2025,7:2025,8:2025,9:2025,10:2025,11:2025}
   const MSHORT=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec']
-  return {label:`${MSHORT[calMo]} ${peakDay}, ${yr}`, total:Math.round(totals[peakMo]/days*1.35)}
+  let currFn, prevFn, label, hasPrev=true, currMis, prevMis, cSlice, pSlice
+
+  switch(dateRangeMode){
+    case 'week':
+      // Feb 8-14 2026 vs Feb 1-7 2026
+      cSlice={mi:1,d1:8,d2:14}; pSlice={mi:1,d1:1,d2:7}
+      currFn=s=>siteDuressPartial(s.id,1,8,14); prevFn=s=>siteDuressPartial(s.id,1,1,7)
+      label='Last 7 days vs previous 7 days'; currMis=[1]
+      break
+    case 'month':
+      // Feb 2026 vs Jan 2026
+      currFn=s=>siteDuressMonths(s.id,[1]); prevFn=s=>siteDuressMonths(s.id,[0])
+      label='Last 30 days vs previous 30 days'; currMis=[1]
+      break
+    case 'quarter':
+      // Dec 2025+Jan+Feb 2026 (11,0,1) vs Sep+Oct+Nov 2025 (8,9,10)
+      currFn=s=>siteDuressMonths(s.id,[11,0,1]); prevFn=s=>siteDuressMonths(s.id,[8,9,10])
+      label='Last 90 days vs previous 90 days'; currMis=[11,0,1]
+      break
+    default: // year
+      currFn=s=>siteDuressMonths(s.id,[0,1,2,3,4,5,6,7,8,9,10,11]); prevFn=null
+      hasPrev=false; label='Full fiscal year'; currMis=[0,1,2,3,4,5,6,7,8,9,10,11]
+  }
+
+  const curr=as.map(s=>({site:s,v:currFn(s)}))
+  const prev=hasPrev?as.map(s=>({site:s,v:prevFn(s)})):null
+  const totalCurr=curr.reduce((s,d)=>s+d.v,0)
+  const totalPrev=hasPrev?prev.reduce((s,d)=>s+d.v,0):null
+
+  // Spike day: peak daily duress across all sites in current period
+  let spike={total:0,label:'—'}
+  const checkDay=(mi,d)=>{
+    const tot=as.reduce((s,site)=>s+(dailyDuress(site.id,mi)[d-1]||0),0)
+    if(tot>spike.total) spike={total:tot,label:`${MSHORT[mi]} ${d}, ${MYR[mi]}`}
+  }
+  if(cSlice){ for(let d=cSlice.d1;d<=cSlice.d2;d++) checkDay(cSlice.mi,d) }
+  else{ currMis.forEach(mi=>{ const days=[31,28,31,30,31,30,31,31,30,31,30,31][mi]; for(let d=1;d<=days;d++) checkDay(mi,d) }) }
+
+  return {curr,prev,totalCurr,totalPrev,label,hasPrev,spike}
 }
 
 function updateKPIs(){
   const as=activeSites()
-  if(!as.length){
-    ['a','b','c','d'].forEach(k=>{ document.getElementById(`kpi-${k}-val`).textContent='—'; document.getElementById(`kpi-${k}-sub`).textContent='No sites' })
-    return
+  const noData=v=>{ document.getElementById(v+'-val').textContent='—'; document.getElementById(v+'-sub').textContent='No sites selected' }
+  if(!as.length){ ['kpi-trend','kpi-most','kpi-inc','kpi-drop','kpi-spike'].forEach(noData); return }
+
+  const {curr,prev,totalCurr,totalPrev,label,hasPrev,spike}=securityPeriods()
+
+  // 1. Trend
+  const trendEl=document.getElementById('kpi-trend-val')
+  const trendLbl=document.getElementById('kpi-trend-lbl')
+  if(hasPrev&&totalPrev>0){
+    const pct=Math.round((totalCurr-totalPrev)/totalPrev*100)
+    const warn=pct>=15
+    trendEl.textContent=(pct>=0?'↑ ':'↓ ')+Math.abs(pct)+'%'
+    trendEl.style.color=pct>=0?'#C0385A':'#16A34A'
+    trendLbl.textContent=(warn?'⚠ ':'')+'Security Incidents'
+  } else {
+    trendEl.textContent=totalCurr; trendEl.style.color=''; trendLbl.textContent='Security Incidents'
   }
-  const siteTotals=as.map(s=>({ site:s, total:yearData(s.id).reduce((sum,v,i)=>catActive[CATS[i].id]?sum+v:sum,0), duress:yearData(s.id)[0] }))
-  const highest=siteTotals.reduce((a,b)=>a.total>=b.total?a:b)
-  const highestCrit=siteTotals.reduce((a,b)=>{ const ra=a.total>0?a.duress/a.total:0,rb=b.total>0?b.duress/b.total:0; return ra>=rb?a:b })
-  const highestCritCount=siteTotals.reduce((a,b)=>a.duress>=b.duress?a:b)
-  document.getElementById('kpi-a-val').textContent=highest.total
-  document.getElementById('kpi-a-sub').textContent=highest.site.name
-  document.getElementById('kpi-b-val').textContent=highestCrit.total>0?Math.round(highestCrit.duress/highestCrit.total*100)+'%':'—'
-  document.getElementById('kpi-b-sub').textContent=highestCrit.site.name
-  document.getElementById('kpi-c-val').textContent=highestCritCount.duress
-  document.getElementById('kpi-c-sub').textContent=highestCritCount.site.name
-  const peak=getPeakDay()
-  document.getElementById('kpi-d-val').textContent=peak.total
-  document.getElementById('kpi-d-sub').textContent=peak.label
+  document.getElementById('kpi-trend-sub').textContent=label
+
+  // 2. Most incidents
+  const most=curr.reduce((a,b)=>a.v>=b.v?a:b)
+  document.getElementById('kpi-most-val').textContent=most.v
+  document.getElementById('kpi-most-sub').textContent=most.site.name
+
+  // 3. Largest increase / 4. Largest drop
+  if(hasPrev){
+    const deltas=curr.map((d,i)=>({site:d.site,delta:d.v-(prev[i]?.v||0)}))
+    const maxInc=deltas.reduce((a,b)=>a.delta>=b.delta?a:b)
+    const maxDrop=deltas.reduce((a,b)=>a.delta<=b.delta?a:b)
+    const incEl=document.getElementById('kpi-inc-val')
+    incEl.textContent=(maxInc.delta>0?'+':'')+maxInc.delta+' incidents'
+    incEl.style.color=maxInc.delta>0?'#C0385A':'var(--t2)'
+    document.getElementById('kpi-inc-sub').textContent=maxInc.site.name
+    document.getElementById('kpi-inc-sub2').textContent=label
+    const dropEl=document.getElementById('kpi-drop-val')
+    dropEl.textContent=(maxDrop.delta>0?'+':'')+maxDrop.delta+' incidents'
+    dropEl.style.color=maxDrop.delta<0?'#16A34A':'var(--t2)'
+    document.getElementById('kpi-drop-sub').textContent=maxDrop.site.name
+    document.getElementById('kpi-drop-sub2').textContent=label
+  } else {
+    document.getElementById('kpi-inc-val').textContent='—'; document.getElementById('kpi-inc-val').style.color=''
+    document.getElementById('kpi-inc-sub').textContent='Select a shorter range'
+    document.getElementById('kpi-inc-sub2').textContent=''
+    document.getElementById('kpi-drop-val').textContent='—'; document.getElementById('kpi-drop-val').style.color=''
+    document.getElementById('kpi-drop-sub').textContent='Select a shorter range'
+    document.getElementById('kpi-drop-sub2').textContent=''
+  }
+
+  // 5. Spike day
+  document.getElementById('kpi-spike-val').textContent=spike.label
+  document.getElementById('kpi-spike-sub').textContent=spike.total+' security incidents'
 }
 
 function renderLegend(id){ document.getElementById(id).innerHTML=activeCats().map(c=>`<div class="leg-i"><div class="leg-sw" style="background:${c.color}"></div>${c.label}</div>`).join('') }
