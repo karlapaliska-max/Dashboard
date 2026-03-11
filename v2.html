@@ -73,7 +73,7 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--t1);font-si
 .tab{padding:11px 18px 10px;font-size:12px;font-weight:600;color:var(--t3);cursor:pointer;border-bottom:2px solid transparent;margin-bottom:-1px;transition:all .14s}
 .tab:hover{color:var(--t2)}
 .tab.on{color:var(--acc);border-bottom-color:var(--acc)}
-.gran-toggle{display:flex;background:var(--bg);border:1px solid var(--border);border-radius:var(--radius);padding:2px;gap:2px;margin:8px 0}
+.gran-toggle{display:flex;background:var(--bg);border:1px solid var(--border);border-radius:var(--radius);padding:2px;gap:2px}
 .gb{padding:4px 12px;border-radius:6px;font-family:'Inter',sans-serif;font-size:11px;font-weight:600;cursor:pointer;border:none;background:transparent;color:var(--t2);transition:all .14s}
 .gb.on{background:var(--surface);color:var(--t1);box-shadow:0 1px 3px rgba(0,0,0,.08)}
 
@@ -82,12 +82,14 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--t1);font-si
 .panel{display:none}.panel.on{display:block}
 
 /* ══ KPIs ══ */
-.kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:20px}
+.kpis{display:grid;grid-template-columns:repeat(5,1fr);gap:12px;margin-bottom:20px}
 .kpi{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:14px 16px;position:relative;overflow:hidden;--kpi-top:var(--acc)}
 .kpi::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;background:var(--kpi-top)}
 .kpi-lbl{font-size:11px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--t3);margin-bottom:4px}
-.kpi-val{font-family:'JetBrains Mono',monospace;font-size:26px;font-weight:500;color:var(--t1);line-height:1}
-.kpi-sub{font-size:13px;color:var(--t3);margin-top:4px}
+.kpi-val{font-family:'JetBrains Mono',monospace;font-size:24px;font-weight:500;color:var(--t1);line-height:1.1}
+.kpi-val.sm{font-size:18px}
+.kpi-sub{font-size:12px;color:var(--t2);margin-top:5px;font-weight:500}
+.kpi-sub2{font-size:11px;color:var(--t3);margin-top:2px}
 
 /* ══ CARD ══ */
 .card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);overflow:hidden;margin-bottom:18px}
@@ -140,6 +142,10 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--t1);font-si
 .expand-btn.open .tri{transform:rotate(90deg)}
 .inc-table tr.subrow td{background:var(--bg)}
 .inc-table tr.subrow td:first-child{padding-left:34px;color:var(--t2);font-size:11px}
+.inc-table tr.subrow-l2 td{background:color-mix(in srgb,var(--bg) 60%,var(--surface) 40%)}
+.inc-table tr.subrow-l2 td:first-child{padding-left:52px;color:var(--t2);font-size:11px}
+.inc-table tr.subrow-l3 td{background:var(--surface)}
+.inc-table tr.subrow-l3 td:first-child{padding-left:70px;color:var(--t3);font-size:11px}
 .inc-table td.num{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--t2)}
 .inc-table td.num.bold{font-weight:600;color:var(--t1);font-size:12px}
 
@@ -437,53 +443,78 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--t1);font-si
     <!-- Tabs -->
     <div class="tabs-bar">
       <div class="tabs">
-        <div class="tab" onclick="switchTab('timeline',this)">Timeline</div>
-        <div class="tab on" onclick="switchTab('bysite',this)">By Site</div>
-      </div>
-      <div class="gran-toggle" id="gran-toggle">
-        <button class="gb on" onclick="setGranSite('month',this)">Month</button>
-        <button class="gb" onclick="setGranSite('year',this)">Year</button>
-      </div>
-      <div class="gran-toggle" id="gran-timeline" style="display:none">
-        <button class="gb" onclick="setGran(this)">Day</button>
-        <button class="gb" onclick="setGran(this)">Week</button>
-        <button class="gb on" onclick="setGran(this)">Month</button>
+        <div class="tab on" onclick="switchTab('timeline',this)">Timeline</div>
+        <div class="tab" onclick="switchTab('bysite',this)">By Site</div>
       </div>
     </div>
 
     <div class="content" id="main-content">
       <!-- KPIs -->
       <div class="kpis">
-        <div class="kpi" style="--kpi-top:#C0385A"><div class="kpi-lbl">Highest Incident Site</div><div class="kpi-val" id="kpi-a-val">—</div><div class="kpi-sub" id="kpi-a-sub">—</div></div>
-        <div class="kpi" style="--kpi-top:#F4845F"><div class="kpi-lbl">Highest Critical Rate</div><div class="kpi-val" id="kpi-b-val">—</div><div class="kpi-sub" id="kpi-b-sub">—</div></div>
-        <div class="kpi" style="--kpi-top:var(--acc)"><div class="kpi-lbl">Highest Critical Incidents</div><div class="kpi-val" id="kpi-c-val">—</div><div class="kpi-sub" id="kpi-c-sub">—</div></div>
-        <div class="kpi" style="--kpi-top:#94A3B8"><div class="kpi-lbl">Sites Selected</div><div class="kpi-val" id="kpi-d-val">—</div><div class="kpi-sub" id="kpi-d-sub">—</div></div>
+        <div class="kpi" style="--kpi-top:#C0385A">
+          <div class="kpi-lbl" id="kpi-trend-lbl">Security Incidents</div>
+          <div class="kpi-val" id="kpi-trend-val">—</div>
+          <div class="kpi-sub" id="kpi-trend-sub">—</div>
+        </div>
+        <div class="kpi" style="--kpi-top:#C0385A">
+          <div class="kpi-lbl">Most Security Incidents</div>
+          <div class="kpi-val" id="kpi-most-val">—</div>
+          <div class="kpi-sub" id="kpi-most-sub">—</div>
+        </div>
+        <div class="kpi" id="kpi-inc" style="--kpi-top:#F4845F">
+          <div class="kpi-lbl" id="kpi-inc-lbl">Largest Increase</div>
+          <div class="kpi-val sm" id="kpi-inc-val">—</div>
+          <div class="kpi-sub" id="kpi-inc-sub">—</div>
+          <div class="kpi-sub2" id="kpi-inc-sub2"></div>
+        </div>
+        <div class="kpi" id="kpi-drop" style="--kpi-top:#16A34A">
+          <div class="kpi-lbl" id="kpi-drop-lbl">Largest Drop</div>
+          <div class="kpi-val sm" id="kpi-drop-val">—</div>
+          <div class="kpi-sub" id="kpi-drop-sub">—</div>
+          <div class="kpi-sub2" id="kpi-drop-sub2"></div>
+        </div>
+        <div class="kpi" style="--kpi-top:#94A3B8">
+          <div class="kpi-lbl">Spike Day</div>
+          <div class="kpi-val sm" id="kpi-spike-val">—</div>
+          <div class="kpi-sub" id="kpi-spike-sub">—</div>
+        </div>
       </div>
 
       <!-- Timeline panel -->
-      <div id="panel-timeline" class="panel">
+      <div id="panel-timeline" class="panel on">
         <div class="card">
           <div class="card-head"><div class="card-head-l"><h3>Incidents Over Time</h3></div></div>
-          <div class="area-wrap"><svg id="tl-svg" viewBox="0 0 960 260" width="100%" style="display:block;overflow:visible"></svg></div>
+          <div class="area-wrap"><svg id="tl-svg" width="100%" style="display:block;overflow:visible"></svg></div>
           <div id="tl-empty" style="display:none" class="empty-state"><strong>No data to show</strong>Adjust your filters above</div>
           <div class="legend" id="tl-legend"></div>
+        </div>
+        <div class="card" id="tl-table-card">
+          <div class="card-head">
+            <div class="card-head-l"><h3>Site Breakdown by Time</h3></div>
+            <div style="display:flex;gap:10px;align-items:center">
+              <div class="gran-toggle" id="tl-table-gran-toggle">
+                <button class="gb on" onclick="setTLTableGran('month',this)">Month</button>
+                <button class="gb" onclick="setTLTableGran('week',this)">Week</button>
+              </div>
+              <button class="btn">↓ CSV</button><button class="btn primary">↓ Excel</button>
+            </div>
+          </div>
+          <div class="inc-table-wrap"><table class="inc-table" id="tl-inc-table"><thead id="tl-inc-thead"></thead><tbody id="tl-inc-tbody"></tbody></table></div>
         </div>
       </div>
 
       <!-- By Site panel -->
-      <div id="panel-bysite" class="panel on">
+      <div id="panel-bysite" class="panel">
         <div class="card">
-          <div class="card-head"><div class="card-head-l"><h3>Incidents by Site</h3><p>Incident Breakdown by Site and Time.</p></div></div>
+          <div class="card-head"><div class="card-head-l"><h3>Incidents by Site</h3><p>Incident Breakdown by Site and Time.</p></div><div class="gran-toggle" id="gran-toggle"><button class="gb on" onclick="setGranSite('month',this)">Month</button><button class="gb" onclick="setGranSite('year',this)">Year</button></div></div>
           <div class="legend" id="bs-legend" style="border-bottom:1px solid var(--border)"></div>
           <div class="axis-header"><div class="axis-label-spacer"></div><div class="axis-track" id="axis-track"></div><div class="axis-right-spacer"></div></div>
           <div class="bysite-chart-outer"><div class="bysite-chart-inner" id="chart-inner"></div></div>
         </div>
-      </div>
-
-      <!-- Table -->
-      <div class="card" id="incidents-table-card">
-        <div class="card-head"><div class="card-head-l"><h3>Site Breakdown</h3></div><div style="display:flex;gap:8px"><button class="btn">↓ CSV</button><button class="btn primary">↓ Excel</button></div></div>
-        <div class="inc-table-wrap"><table class="inc-table" id="inc-table"><thead id="inc-thead"></thead><tbody id="inc-tbody"></tbody></table></div>
+        <div class="card" id="incidents-table-card">
+          <div class="card-head"><div class="card-head-l"><h3>Site Breakdown</h3></div><div style="display:flex;gap:8px"><button class="btn">↓ CSV</button><button class="btn primary">↓ Excel</button></div></div>
+          <div class="inc-table-wrap"><table class="inc-table" id="inc-table"><thead id="inc-thead"></thead><tbody id="inc-tbody"></tbody></table></div>
+        </div>
       </div>
     </div>
   </div>
@@ -690,6 +721,7 @@ let granSite = 'month'
 let drawerState = null
 let expandedBldgs = {}
 let expandedFloors = {}
+let _tlState = null
 
 function activeCats(){ return CATS.filter(c=>catActive[c.id]) }
 function activeIdx(){ return CATS.map((c,i)=>catActive[c.id]?i:-1).filter(i=>i>=0) }
@@ -720,8 +752,12 @@ document.addEventListener('click',e=>{
     openDrop=null
   }
 })
+let dateRangeMode='year'
 function setQuickDate(r){
-  document.getElementById('f-date-label').textContent=r==='week'?'Last 7 days':r==='month'?'Last 30 days':r==='quarter'?'Last 90 days':'Last 12 months'
+  dateRangeMode=r
+  const labels={week:'Last 7 days',month:'Last 30 days',quarter:'Last 90 days',year:'Last 12 months'}
+  document.getElementById('f-date-label').textContent=labels[r]||'Last 12 months'
+  updateKPIs()
 }
 
 function buildTypesDD(){
@@ -802,6 +838,7 @@ function buildBarChartSVG(vals, total){
 // DRAWER
 // ─────────────────────────────────────────────
 function openDrawer(siteId, monthIdx, periodLabel, vals){
+  hideTip()
   const site = SITES.find(s=>s.id===siteId)
   const total = filteredSum(vals)
   const isNewContext = !drawerState || drawerState.siteId!==siteId || drawerState.monthIdx!==monthIdx
@@ -1069,26 +1106,146 @@ function showAreaTip(e, name, vals, tot){
 }
 
 // ─────────────────────────────────────────────
-// KPIs
+// KPIs — security (duress) tiles
 // ─────────────────────────────────────────────
+
+// Deterministic seeded PRNG
+function _rng(seed){ seed=seed|0; return()=>{ seed^=seed<<13; seed^=seed>>17; seed^=seed<<5; return(seed>>>0)/4294967296 } }
+
+// Daily duress distribution for a site+month (deterministic)
+function dailyDuress(siteId, mi){
+  const rng=_rng(siteId.split('').reduce((a,c)=>a+c.charCodeAt(0),0)*97+mi*31)
+  const total=DATA[siteId][mi][0]
+  const days=[31,28,31,30,31,30,31,31,30,31,30,31][mi]
+  const w=Array.from({length:days},()=>0.3+rng()), ws=w.reduce((a,b)=>a+b,0)
+  let rem=total
+  return w.map((v,i)=>{ if(i===days-1) return Math.max(0,rem); const x=Math.round(v/ws*total); rem-=x; return Math.max(0,x) })
+}
+
+// Sum duress across full months for a site
+function siteDuressMonths(siteId, mis){ return mis.reduce((s,mi)=>s+DATA[siteId][mi][0],0) }
+// Sum duress for partial month (days d1..d2, 1-indexed)
+function siteDuressPartial(siteId, mi, d1, d2){ return dailyDuress(siteId,mi).slice(d1-1,d2).reduce((a,b)=>a+b,0) }
+
+// Returns period data based on current dateRangeMode
+function securityPeriods(){
+  const as=activeSites()
+  // Month indices: 0=Jan2026,1=Feb2026,2=Mar2025,...,11=Dec2025
+  const MYR={0:2026,1:2026,2:2025,3:2025,4:2025,5:2025,6:2025,7:2025,8:2025,9:2025,10:2025,11:2025}
+  const MSHORT=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec']
+  let currFn, prevFn, label, hasPrev=true, currMis, prevMis, cSlice, pSlice
+
+  switch(dateRangeMode){
+    case 'week':
+      // Feb 8-14 2026 vs Feb 1-7 2026
+      cSlice={mi:1,d1:8,d2:14}; pSlice={mi:1,d1:1,d2:7}
+      currFn=s=>siteDuressPartial(s.id,1,8,14); prevFn=s=>siteDuressPartial(s.id,1,1,7)
+      label='Last 7 days vs previous 7 days'; currMis=[1]
+      break
+    case 'month':
+      // Feb 2026 vs Jan 2026
+      currFn=s=>siteDuressMonths(s.id,[1]); prevFn=s=>siteDuressMonths(s.id,[0])
+      label='Last 30 days vs previous 30 days'; currMis=[1]
+      break
+    case 'quarter':
+      // Dec 2025+Jan+Feb 2026 (11,0,1) vs Sep+Oct+Nov 2025 (8,9,10)
+      currFn=s=>siteDuressMonths(s.id,[11,0,1]); prevFn=s=>siteDuressMonths(s.id,[8,9,10])
+      label='Last 90 days vs previous 90 days'; currMis=[11,0,1]
+      break
+    default: // year
+      currFn=s=>siteDuressMonths(s.id,[0,1,2,3,4,5,6,7,8,9,10,11]); prevFn=null
+      hasPrev=false; label='Full fiscal year'; currMis=[0,1,2,3,4,5,6,7,8,9,10,11]
+  }
+
+  const curr=as.map(s=>({site:s,v:currFn(s)}))
+  const prev=hasPrev?as.map(s=>({site:s,v:prevFn(s)})):null
+  const totalCurr=curr.reduce((s,d)=>s+d.v,0)
+  const totalPrev=hasPrev?prev.reduce((s,d)=>s+d.v,0):null
+
+  // Spike day: peak daily duress across all sites in current period
+  let spike={total:0,label:'—'}
+  const checkDay=(mi,d)=>{
+    const tot=as.reduce((s,site)=>s+(dailyDuress(site.id,mi)[d-1]||0),0)
+    if(tot>spike.total) spike={total:tot,label:`${MSHORT[mi]} ${d}, ${MYR[mi]}`}
+  }
+  if(cSlice){ for(let d=cSlice.d1;d<=cSlice.d2;d++) checkDay(cSlice.mi,d) }
+  else{ currMis.forEach(mi=>{ const days=[31,28,31,30,31,30,31,31,30,31,30,31][mi]; for(let d=1;d<=days;d++) checkDay(mi,d) }) }
+
+  return {curr,prev,totalCurr,totalPrev,label,hasPrev,spike,currMis}
+}
+
 function updateKPIs(){
   const as=activeSites()
-  if(!as.length){
-    ['a','b','c','d'].forEach(k=>{ document.getElementById(`kpi-${k}-val`).textContent='—'; document.getElementById(`kpi-${k}-sub`).textContent='No sites' })
-    return
+  const noData=v=>{ document.getElementById(v+'-val').textContent='—'; document.getElementById(v+'-sub').textContent='No sites selected' }
+  if(!as.length){ ['kpi-trend','kpi-most','kpi-inc','kpi-drop','kpi-spike'].forEach(noData); return }
+
+  const {curr,prev,totalCurr,totalPrev,label,hasPrev,spike,currMis}=securityPeriods()
+
+  // 1. Trend
+  const trendEl=document.getElementById('kpi-trend-val')
+  const trendLbl=document.getElementById('kpi-trend-lbl')
+  if(hasPrev&&totalPrev>0){
+    const pct=Math.round((totalCurr-totalPrev)/totalPrev*100)
+    const warn=pct>=15
+    trendEl.textContent=(pct>=0?'↑ ':'↓ ')+Math.abs(pct)+'%'
+    trendEl.style.color=pct>=0?'#C0385A':'#16A34A'
+    trendLbl.textContent=(warn?'⚠ ':'')+'Security Incidents'
+  } else {
+    trendEl.textContent=totalCurr; trendEl.style.color=''; trendLbl.textContent='Security Incidents'
   }
-  const siteTotals=as.map(s=>({ site:s, total:yearData(s.id).reduce((sum,v,i)=>catActive[CATS[i].id]?sum+v:sum,0), duress:yearData(s.id)[0] }))
-  const highest=siteTotals.reduce((a,b)=>a.total>=b.total?a:b)
-  const highestCrit=siteTotals.reduce((a,b)=>{ const ra=a.total>0?a.duress/a.total:0,rb=b.total>0?b.duress/b.total:0; return ra>=rb?a:b })
-  const highestCritCount=siteTotals.reduce((a,b)=>a.duress>=b.duress?a:b)
-  document.getElementById('kpi-a-val').textContent=highest.total
-  document.getElementById('kpi-a-sub').textContent=highest.site.name
-  document.getElementById('kpi-b-val').textContent=highestCrit.total>0?Math.round(highestCrit.duress/highestCrit.total*100)+'%':'—'
-  document.getElementById('kpi-b-sub').textContent=highestCrit.site.name
-  document.getElementById('kpi-c-val').textContent=highestCritCount.duress
-  document.getElementById('kpi-c-sub').textContent=highestCritCount.site.name
-  document.getElementById('kpi-d-val').textContent=as.length
-  document.getElementById('kpi-d-sub').textContent='Of '+SITES.length+' total'
+  document.getElementById('kpi-trend-sub').textContent=label
+
+  // 2. Most incidents
+  const most=curr.reduce((a,b)=>a.v>=b.v?a:b)
+  document.getElementById('kpi-most-val').textContent=most.v
+  document.getElementById('kpi-most-sub').textContent=most.site.name
+
+  // 3 & 4. Largest Increase / Largest Drop — or fallback Peak / Quietest Month
+  const MSHORT_KPI=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec']
+  const MYR_KPI={0:2026,1:2026,2:2025,3:2025,4:2025,5:2025,6:2025,7:2025,8:2025,9:2025,10:2025,11:2025}
+  if(hasPrev){
+    document.getElementById('kpi-inc-lbl').textContent='Largest Increase'
+    document.getElementById('kpi-inc').style.setProperty('--kpi-top','#F4845F')
+    document.getElementById('kpi-drop-lbl').textContent='Largest Drop'
+    document.getElementById('kpi-drop').style.setProperty('--kpi-top','#16A34A')
+    const deltas=curr.map((d,i)=>({site:d.site,delta:d.v-(prev[i]?.v||0)}))
+    const maxInc=deltas.reduce((a,b)=>a.delta>=b.delta?a:b)
+    const maxDrop=deltas.reduce((a,b)=>a.delta<=b.delta?a:b)
+    const incEl=document.getElementById('kpi-inc-val')
+    incEl.textContent=(maxInc.delta>0?'+':'')+maxInc.delta+' incidents'
+    incEl.style.color=maxInc.delta>0?'#C0385A':'var(--t2)'
+    document.getElementById('kpi-inc-sub').textContent=maxInc.site.name
+    document.getElementById('kpi-inc-sub2').textContent=label
+    const dropEl=document.getElementById('kpi-drop-val')
+    dropEl.textContent=(maxDrop.delta>0?'+':'')+maxDrop.delta+' incidents'
+    dropEl.style.color=maxDrop.delta<0?'#16A34A':'var(--t2)'
+    document.getElementById('kpi-drop-sub').textContent=maxDrop.site.name
+    document.getElementById('kpi-drop-sub2').textContent=label
+  } else {
+    // Fallback: Peak Month & Quietest Month within the current period
+    document.getElementById('kpi-inc-lbl').textContent='Peak Month'
+    document.getElementById('kpi-inc').style.setProperty('--kpi-top','#F4845F')
+    document.getElementById('kpi-drop-lbl').textContent='Quietest Month'
+    document.getElementById('kpi-drop').style.setProperty('--kpi-top','#16A34A')
+    const mTotals=currMis.map(mi=>({mi,total:as.reduce((s,site)=>s+DATA[site.id][mi][0],0)}))
+    const avg=mTotals.reduce((s,m)=>s+m.total,0)/mTotals.length
+    const peak=mTotals.reduce((a,b)=>a.total>=b.total?a:b)
+    const quiet=mTotals.reduce((a,b)=>a.total<=b.total?a:b)
+    const peakPct=Math.round((peak.total-avg)/avg*100)
+    const quietPct=Math.round((quiet.total-avg)/avg*100)
+    const incEl=document.getElementById('kpi-inc-val')
+    incEl.textContent=peak.total; incEl.style.color='#C0385A'
+    document.getElementById('kpi-inc-sub').textContent=`${MSHORT_KPI[peak.mi]} ${MYR_KPI[peak.mi]}`
+    document.getElementById('kpi-inc-sub2').textContent=`+${peakPct}% vs monthly avg`
+    const dropEl=document.getElementById('kpi-drop-val')
+    dropEl.textContent=quiet.total; dropEl.style.color='#16A34A'
+    document.getElementById('kpi-drop-sub').textContent=`${MSHORT_KPI[quiet.mi]} ${MYR_KPI[quiet.mi]}`
+    document.getElementById('kpi-drop-sub2').textContent=`${quietPct}% vs monthly avg`
+  }
+
+  // 5. Spike day
+  document.getElementById('kpi-spike-val').textContent=spike.label
+  document.getElementById('kpi-spike-sub').textContent=spike.total+' security incidents'
 }
 
 function renderLegend(id){ document.getElementById(id).innerHTML=activeCats().map(c=>`<div class="leg-i"><div class="leg-sw" style="background:${c.color}"></div>${c.label}</div>`).join('') }
@@ -1101,20 +1258,34 @@ function timelineMonthlyTotals(){ return MONTHS.map((_,mi)=>CATS.map((_,ci)=>SIT
 function renderTimeline(){
   const svg=document.getElementById('tl-svg'), emptyEl=document.getElementById('tl-empty')
   const ac=activeCats(), as=activeSites()
-  if(!ac.length||!as.length){ svg.style.display='none'; emptyEl.style.display='block'; return }
+  if(!ac.length||!as.length){ svg.style.display='none'; emptyEl.style.display='block'; _tlState=null; hideTip(); return }
   svg.style.display='block'; emptyEl.style.display='none'
-  const monthly=timelineMonthlyTotals(), maxVal=Math.max(...monthly.map(mo=>activeIdx().reduce((s,i)=>s+(mo[i]||0),0)),1)
-  const niceMax=Math.ceil(maxVal/50)*50, W=960,H=340,PL=52,PR=16,PT=16,PB=46
-  const cW=W-PL-PR,cH=H-PT-PB,n=12, xOf=i=>PL+(i/(n-1))*cW, yOf=v=>PT+cH-(v/niceMax)*cH
+  const monthly=timelineMonthlyTotals()
+  const maxVal=Math.max(...monthly.map(mo=>activeIdx().reduce((s,i)=>s+(mo[i]||0),0)),1)
+  const niceMax=Math.ceil(maxVal*1.1/10)*10
+  const W=Math.max((svg.parentElement.offsetWidth||840)-40,400),H=340,PL=52,PR=16,PT=16,PB=46
+  const cW=W-PL-PR,cH=H-PT-PB,n=12
+  const xOf=i=>PL+(i/(n-1))*cW, yOf=v=>PT+cH-(v/niceMax)*cH
+  // Smooth bezier commands (Catmull-Rom, no leading M)
+  function smoothCmds(pts){
+    let d=''
+    for(let i=0;i<pts.length-1;i++){
+      const p0=pts[Math.max(0,i-1)],p1=pts[i],p2=pts[i+1],p3=pts[Math.min(pts.length-1,i+2)],t=6
+      d+=` C${(p1.x+(p2.x-p0.x)/t).toFixed(1)},${(p1.y+(p2.y-p0.y)/t).toFixed(1)} ${(p2.x-(p3.x-p1.x)/t).toFixed(1)},${(p2.y-(p3.y-p1.y)/t).toFixed(1)} ${p2.x.toFixed(1)},${p2.y.toFixed(1)}`
+    }
+    return d
+  }
   let defs='<defs>', paths='', cumul=new Array(n).fill(0)
   ;[...activeIdx()].reverse().forEach(ci=>{
     const cat=CATS[ci], lower=[...cumul]
     for(let i=0;i<n;i++) cumul[i]+=(monthly[i][ci]||0)
     const upper=[...cumul]
-    const top=upper.map((_,i)=>`${xOf(i).toFixed(1)},${yOf(upper[i]).toFixed(1)}`).join(' L')
-    const bot=lower.map((_,i)=>`${xOf(n-1-i).toFixed(1)},${yOf(lower[n-1-i]).toFixed(1)}`).join(' L')
+    const topPts=upper.map((v,i)=>({x:xOf(i),y:yOf(v)}))
+    const botPts=lower.map((v,i)=>({x:xOf(i),y:yOf(v)}))
+    const rev=[...botPts].reverse()
+    const d=`M${topPts[0].x.toFixed(1)},${topPts[0].y.toFixed(1)}`+smoothCmds(topPts)+` L${rev[0].x.toFixed(1)},${rev[0].y.toFixed(1)}`+smoothCmds(rev)+' Z'
     defs+=`<linearGradient id="tg${ci}" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="${cat.color}" stop-opacity=".6"/><stop offset="100%" stop-color="${cat.color}" stop-opacity=".08"/></linearGradient>`
-    paths+=`<path d="M${top} L${bot} Z" fill="url(#tg${ci})" stroke="${cat.color}" stroke-width="0.5" stroke-linejoin="round"/>\n`
+    paths+=`<path d="${d}" fill="url(#tg${ci})" stroke="${cat.color}" stroke-width="0.5" stroke-linejoin="round"/>\n`
   })
   defs+='</defs>'
   let grid=''
@@ -1123,12 +1294,53 @@ function renderTimeline(){
     grid+=`<line x1="${PL}" y1="${y.toFixed(1)}" x2="${W-PR}" y2="${y.toFixed(1)}" stroke="#E4E7ED" stroke-width="1" stroke-dasharray="3,4"/><text x="${PL-8}" y="${(y+3.5).toFixed(1)}" fill="#9AA3B4" font-size="10" text-anchor="end" font-family="JetBrains Mono">${Math.round(v)}</text>`
   }
   for(let i=1;i<n-1;i++) grid+=`<line x1="${xOf(i).toFixed(1)}" y1="${PT}" x2="${xOf(i).toFixed(1)}" y2="${PT+cH}" stroke="#E4E7ED" stroke-width="1" stroke-dasharray="3,4"/>`
-  const mLabels=['Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec','Jan','Feb']
+  const mLabels=["Mar '25","Apr '25","May '25","Jun '25","Jul '25","Aug '25","Sep '25","Oct '25","Nov '25","Dec '25","Jan '26","Feb '26"]
   const xlabels=mLabels.map((m,i)=>`<text x="${xOf(i).toFixed(1)}" y="${(PT+cH+14).toFixed(1)}" fill="#9AA3B4" font-size="10" text-anchor="middle" font-family="JetBrains Mono">${m}</text>`).join('')
-  svg.setAttribute('viewBox',`0 0 ${W} ${H}`)
+  svg.removeAttribute('viewBox')
+  svg.setAttribute('width', W)
+  svg.setAttribute('height', H)
   svg.innerHTML=defs+grid+paths+xlabels
+  // Crosshair (appended after innerHTML reset)
+  const ch=document.createElementNS('http://www.w3.org/2000/svg','line')
+  ch.id='tl-crosshair'; ch.setAttribute('y1',PT); ch.setAttribute('y2',PT+cH)
+  ch.setAttribute('stroke','#94A3B8'); ch.setAttribute('stroke-width','1')
+  ch.setAttribute('stroke-dasharray','4,3'); ch.style.display='none'; ch.style.pointerEvents='none'
+  svg.appendChild(ch)
+  // Transparent hover overlay
+  const ov=document.createElementNS('http://www.w3.org/2000/svg','rect')
+  ov.setAttribute('x',PL); ov.setAttribute('y',PT)
+  ov.setAttribute('width',cW); ov.setAttribute('height',cH+PB)
+  ov.setAttribute('fill','transparent'); ov.style.cursor='crosshair'
+  svg.appendChild(ov)
+  _tlState={xOf,monthly,n}
+  svg.onmousemove=handleTLHover; svg.onmouseleave=hideTLTooltip
   renderLegend('tl-legend')
 }
+
+const TL_MONTH_FULL=['March','April','May','June','July','August','September','October','November','December','January','February']
+const TL_MONTH_YEARS=[2025,2025,2025,2025,2025,2025,2025,2025,2025,2025,2026,2026]
+function handleTLHover(e){
+  if(!_tlState) return
+  const {xOf,monthly,n}=_tlState
+  const rect=this.getBoundingClientRect()
+  const mx=e.clientX-rect.left
+  let best=0,bestD=Infinity
+  for(let i=0;i<n;i++){const d=Math.abs(mx-xOf(i));if(d<bestD){bestD=d;best=i}}
+  const ch=document.getElementById('tl-crosshair')
+  if(ch){ch.setAttribute('x1',xOf(best).toFixed(1));ch.setAttribute('x2',xOf(best).toFixed(1));ch.style.display=''}
+  const moData=monthly[best]
+  const total=activeIdx().reduce((s,i)=>s+(moData[i]||0),0)
+  const tt=document.getElementById('tooltip')
+  document.getElementById('tt-title').textContent=`${TL_MONTH_FULL[best]} ${TL_MONTH_YEARS[best]}`
+  document.getElementById('tt-rows').innerHTML=activeCats().map(cat=>{
+    const ci=CATS.indexOf(cat),v=moData[ci]||0
+    return v?`<div class="tt-row"><span style="display:flex;align-items:center"><span class="tt-dot" style="background:${cat.color}"></span>${cat.label}</span><span>${v}</span></div>`:''
+  }).join('')
+  document.getElementById('tt-total-val').textContent=total
+  document.getElementById('tt-note').textContent=''
+  tt.style.display='block'; moveTip(e)
+}
+function hideTLTooltip(){ hideTip(); const ch=document.getElementById('tl-crosshair'); if(ch) ch.style.display='none' }
 
 // ─────────────────────────────────────────────
 // BY SITE
@@ -1151,6 +1363,7 @@ function renderAxis(max){
   })
 }
 window.addEventListener('resize',()=>renderAxis(_axisMax))
+;(()=>{const el=document.querySelector('.area-wrap');if(el&&window.ResizeObserver) new ResizeObserver(()=>renderTimeline()).observe(el)})()
 
 function renderBysite(){
   const inner=document.getElementById('chart-inner'), as=activeSites(), ac=activeCats()
@@ -1195,6 +1408,7 @@ function handleSiteRowClick(siteId, monthIdx, periodLabel, vals){
 // TOOLTIP
 // ─────────────────────────────────────────────
 function showTip(e,name,vals,tot,period){
+  if(drawerState) return
   const tt=document.getElementById('tooltip')
   document.getElementById('tt-title').innerHTML=`<span style="font-size:10px;color:var(--t3);font-weight:400">${period} · </span>${name}`
   document.getElementById('tt-total-val').textContent=tot||0
@@ -1210,42 +1424,125 @@ document.addEventListener('mousemove',e=>{ if(document.getElementById('tooltip')
 // TABLE
 // ─────────────────────────────────────────────
 const TCOLS=[{key:'duress',label:'Duress'},{key:'nonduress',label:'Non-duress'},{key:'itest_l',label:'Int. test (light)'},{key:'itest_d',label:'Int. test'},{key:'dup',label:'Duplicate'},{key:'test',label:'Test Alert'},{key:'other',label:'Resolved Other'}]
-let tableExpandState={}
+let tableExpandState={}, tableBldState={}, tableFloorState={}
 function siteYearCatTotals(id){ return CATS.map((_,ci)=>DATA[id].reduce((s,mo)=>s+(mo[ci]||0),0)) }
 function renderIncidentsTable(){
   const as=activeSites(), thead=document.getElementById('inc-thead'), tbody=document.getElementById('inc-tbody')
   if(!thead||!tbody) return
-  thead.innerHTML=`<tr><th style="min-width:160px">Site</th><th>Total</th>${TCOLS.map(c=>`<th style="min-width:90px">${c.label}</th>`).join('')}</tr>`
+  thead.innerHTML=`<tr><th style="min-width:200px">Site</th><th>Total</th>${TCOLS.map(c=>`<th style="min-width:90px">${c.label}</th>`).join('')}</tr>`
   if(!as.length){ tbody.innerHTML=`<tr><td colspan="${2+TCOLS.length}" style="text-align:center;padding:32px;color:var(--t3)">No sites selected</td></tr>`; return }
-  const rows=as.map(s=>{ const cats=siteYearCatTotals(s.id); return {site:s,cats,total:cats.reduce((a,b)=>a+b,0),monthRows:MONTHS.map((m,mi)=>({label:m+' 2025',cats:DATA[s.id][mi],total:DATA[s.id][mi].reduce((a,b)=>a+b,0)}))} })
+  const rows=as.map(s=>{ const cats=siteYearCatTotals(s.id); return {site:s,cats,total:cats.reduce((a,b)=>a+b,0)} })
   const gc=CATS.map((_,ci)=>rows.reduce((s,r)=>s+r.cats[ci],0)), gt=gc.reduce((a,b)=>a+b,0)
   const numCell=(v,bold=false)=>v?`<td class="num${bold?' bold':''}">${v}</td>`:`<td class="num" style="color:var(--border2)">—</td>`
   let html=`<tr class="total-row"><td style="font-weight:600">Total</td>${numCell(gt,true)}${gc.map(v=>numCell(v)).join('')}</tr>`
   rows.forEach(r=>{
     const ex=!!tableExpandState[r.site.id]
     html+=`<tr><td><button class="expand-btn${ex?' open':''}" onclick="toggleTableRow('${r.site.id}')"><span class="tri">▶</span>${r.site.name}</button></td>${numCell(r.total,true)}${r.cats.map(v=>numCell(v)).join('')}</tr>`
-    if(ex) r.monthRows.forEach(mr=>{ if(mr.total) html+=`<tr class="subrow"><td>${mr.label}</td>${numCell(mr.total)}${mr.cats.map(v=>numCell(v)).join('')}</tr>` })
+    if(ex){
+      const struct=DRILLDOWN_STRUCTURE[r.site.id]
+      if(!struct) return
+      const bldAreaCounts=struct.buildings.map(b=>b.floors.reduce((s,f)=>s+f.areas.length,0))
+      const bldTotalAreas=bldAreaCounts.reduce((a,b)=>a+b,0)
+      struct.buildings.forEach((bld,bi)=>{
+        const bldFrac=bldAreaCounts[bi]/bldTotalAreas
+        const bldTotal=Math.round(r.total*bldFrac)
+        const bldDist=bld.floors.flatMap(f=>f.areas).reduce((acc,a)=>a.dist.map((d,i)=>acc[i]+d),new Array(CATS.length).fill(0))
+        const bldCats=distToVals(bldDist,bldTotal)
+        const bldKey=r.site.id+'|'+bld.id, bldEx=!!tableBldState[bldKey]
+        html+=`<tr class="subrow"><td><button class="expand-btn${bldEx?' open':''}" onclick="toggleTableBld('${r.site.id}','${bld.id}')"><span class="tri">▶</span>${bld.name}</button></td>${numCell(bldTotal)}${bldCats.map(v=>numCell(v)).join('')}</tr>`
+        if(bldEx){
+          const bldAreaTotal=bld.floors.reduce((s,f)=>s+f.areas.length,0)
+          bld.floors.forEach(fl=>{
+            const flTotal=Math.round(bldTotal*(fl.areas.length/bldAreaTotal))
+            const flDist=fl.areas.reduce((acc,a)=>a.dist.map((d,i)=>acc[i]+d),new Array(CATS.length).fill(0))
+            const flCats=distToVals(flDist,flTotal)
+            const flKey=r.site.id+'|'+bld.id+'|'+fl.id, flEx=!!tableFloorState[flKey]
+            html+=`<tr class="subrow subrow-l2"><td><button class="expand-btn${flEx?' open':''}" onclick="toggleTableFloor('${r.site.id}','${bld.id}','${fl.id}')"><span class="tri">▶</span>${fl.name}</button></td>${numCell(flTotal)}${flCats.map(v=>numCell(v)).join('')}</tr>`
+            if(flEx){
+              fl.areas.forEach(area=>{
+                const aTotal=Math.round(flTotal/fl.areas.length)
+                const aCats=distToVals(area.dist,aTotal)
+                html+=`<tr class="subrow subrow-l3"><td>${area.name}</td>${numCell(aTotal)}${aCats.map(v=>numCell(v)).join('')}</tr>`
+              })
+            }
+          })
+        }
+      })
+    }
   })
   tbody.innerHTML=html
 }
 function toggleTableRow(id){ tableExpandState[id]=!tableExpandState[id]; renderIncidentsTable() }
+function toggleTableBld(siteId,bldId){ const k=siteId+'|'+bldId; tableBldState[k]=!tableBldState[k]; renderIncidentsTable() }
+function toggleTableFloor(siteId,bldId,flId){ const k=siteId+'|'+bldId+'|'+flId; tableFloorState[k]=!tableFloorState[k]; renderIncidentsTable() }
+
+// ─────────────────────────────────────────────
+// TIMELINE TABLE (Site Breakdown by Time)
+// ─────────────────────────────────────────────
+let tlTableGran='month', tlTableExpandState={}
+const TL_MONTH_LABELS=MONTHS.map((m,mi)=>m+' 2025')
+// override Jan/Feb to 2026 (mi=0,1)
+TL_MONTH_LABELS[0]='January 2026'; TL_MONTH_LABELS[1]='February 2026'
+
+function tlWeekRows(siteId){
+  const DAYS=[31,28,31,30,31,30,31,31,30,31,30,31]
+  const MO_SHORT=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec']
+  const MO_YR=[2025,2026,2025,2025,2025,2025,2025,2025,2025,2025,2025,2025]
+  // reorder chronologically: Mar2025..Dec2025, Jan2026, Feb2026
+  const MIS=[2,3,4,5,6,7,8,9,10,11,0,1]
+  const rows=[]
+  MIS.forEach(mi=>{
+    const d=DAYS[mi], cats=DATA[siteId][mi]
+    const ranges=[[1,7],[8,14],[15,21],[22,d]]
+    ranges.forEach((r,wi)=>{
+      const frac=(r[1]-r[0]+1)/d
+      const wCats=cats.map(v=>Math.round(v*frac))
+      rows.push({label:`${MO_SHORT[mi]} W${wi+1} ${MO_YR[mi]}`,cats:wCats,total:wCats.reduce((a,b)=>a+b,0)})
+    })
+  })
+  return rows
+}
+function tlMonthRows(siteId){
+  const MIS=[2,3,4,5,6,7,8,9,10,11,0,1]
+  const MO=['January','February','March','April','May','June','July','August','September','October','November','December']
+  const MO_YR=[2025,2026,2025,2025,2025,2025,2025,2025,2025,2025,2025,2025]
+  return MIS.map(mi=>({label:`${MO[mi]} ${MO_YR[mi]}`,cats:DATA[siteId][mi],total:DATA[siteId][mi].reduce((a,b)=>a+b,0)}))
+}
+function renderTimelineTable(){
+  const as=activeSites(), thead=document.getElementById('tl-inc-thead'), tbody=document.getElementById('tl-inc-tbody')
+  if(!thead||!tbody) return
+  thead.innerHTML=`<tr><th style="min-width:200px">Site</th><th>Total</th>${TCOLS.map(c=>`<th style="min-width:90px">${c.label}</th>`).join('')}</tr>`
+  if(!as.length){ tbody.innerHTML=`<tr><td colspan="${2+TCOLS.length}" style="text-align:center;padding:32px;color:var(--t3)">No sites selected</td></tr>`; return }
+  const rows=as.map(s=>{ const cats=siteYearCatTotals(s.id); return {site:s,cats,total:cats.reduce((a,b)=>a+b,0)} })
+  const gc=CATS.map((_,ci)=>rows.reduce((s,r)=>s+r.cats[ci],0)), gt=gc.reduce((a,b)=>a+b,0)
+  const numCell=(v,bold=false)=>v?`<td class="num${bold?' bold':''}">${v}</td>`:`<td class="num" style="color:var(--border2)">—</td>`
+  let html=`<tr class="total-row"><td style="font-weight:600">Total</td>${numCell(gt,true)}${gc.map(v=>numCell(v)).join('')}</tr>`
+  rows.forEach(r=>{
+    const ex=!!tlTableExpandState[r.site.id]
+    const subRows=tlTableGran==='week'?tlWeekRows(r.site.id):tlMonthRows(r.site.id)
+    html+=`<tr><td><button class="expand-btn${ex?' open':''}" onclick="toggleTLTableRow('${r.site.id}')"><span class="tri">▶</span>${r.site.name}</button></td>${numCell(r.total,true)}${r.cats.map(v=>numCell(v)).join('')}</tr>`
+    if(ex) subRows.forEach(sr=>{ if(sr.total) html+=`<tr class="subrow"><td>${sr.label}</td>${numCell(sr.total)}${sr.cats.map(v=>numCell(v)).join('')}</tr>` })
+  })
+  tbody.innerHTML=html
+}
+function toggleTLTableRow(id){ tlTableExpandState[id]=!tlTableExpandState[id]; renderTimelineTable() }
+function setTLTableGran(mode,btn){ tlTableGran=mode; btn.closest('.gran-toggle').querySelectorAll('.gb').forEach(b=>b.classList.remove('on')); btn.classList.add('on'); renderTimelineTable() }
 
 // ─────────────────────────────────────────────
 // TAB & GRAN
 // ─────────────────────────────────────────────
 function renderAll(){
   const isTL=document.getElementById('panel-timeline').classList.contains('on')
-  if(isTL) renderTimeline(); else renderBysite()
+  if(isTL){ renderTimeline(); renderTimelineTable() } else renderBysite()
   updateKPIs(); renderIncidentsTable()
   if(drawerState) renderDrawerBody()
 }
 function switchTab(id,el){
   document.querySelectorAll('.tab').forEach(t=>t.classList.remove('on')); el.classList.add('on')
   document.querySelectorAll('.panel').forEach(p=>p.classList.remove('on')); document.getElementById('panel-'+id).classList.add('on')
-  document.getElementById('gran-toggle').style.display=id==='bysite'?'flex':'none'
-  document.getElementById('gran-timeline').style.display=id==='timeline'?'flex':'none'
-  if(id==='bysite') renderBysite(); else renderTimeline()
-  updateKPIs(); renderIncidentsTable()
+
+  if(id==='bysite'){ renderBysite(); renderIncidentsTable() } else { renderTimeline(); renderTimelineTable() }
+  updateKPIs()
 }
 function setGranSite(mode,btn){ granSite=mode; btn.closest('.gran-toggle').querySelectorAll('.gb').forEach(b=>b.classList.remove('on')); btn.classList.add('on'); renderBysite() }
 function setGran(btn){ btn.closest('.gran-toggle').querySelectorAll('.gb').forEach(b=>b.classList.remove('on')); btn.classList.add('on') }
@@ -1254,7 +1551,9 @@ function setGran(btn){ btn.closest('.gran-toggle').querySelectorAll('.gb').forEa
 // INIT
 // ─────────────────────────────────────────────
 buildTypesDD(); buildSitesDD()
-renderBysite(); updateKPIs(); renderIncidentsTable()
+renderTimeline(); renderTimelineTable(); updateKPIs(); renderIncidentsTable()
 </script>
 </body>
 </html>
+<!-- Wed Mar 11 12:56:49 CET 2026 -->
+<!-- cache-bust 1773258729 -->
