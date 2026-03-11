@@ -317,7 +317,7 @@ const DRILLDOWN_STRUCTURE = {
 const LOC_COLORS=['#2563EB','#C0385A','#16A34A','#F59E0B','#8B5CF6','#EC4899','#14B8A6','#F97316','#64748B','#0EA5E9']
 let trendGran='month'
 let trendCatActive=Object.fromEntries(CATS.map(c=>[c.id,true]))
-let trendLocations=SITES.map((s,i)=>({id:'loc_'+s.id,type:'site',siteId:s.id,label:s.name,color:LOC_COLORS[i]}))
+let trendLocations=SITES.map((s,i)=>({id:'loc_'+s.id,type:'site',siteId:s.id,bldId:null,flId:null,areaName:null,label:s.name,color:LOC_COLORS[i]}))
 let addSiteOpen=false
 let addSiteNodes={}
 let _trendState=null
@@ -539,6 +539,7 @@ function closeAddSite(){
 // ADD SITE PANEL
 // ─────────────────────────────────────────────
 function isLocAdded(type,siteId,bldId,flId,areaName){
+  bldId=bldId||null; flId=flId||null; areaName=areaName||null
   return trendLocations.some(l=>l.type===type&&l.siteId===siteId&&l.bldId===bldId&&l.flId===flId&&l.areaName===areaName)
 }
 function renderAddSitePanel(){
@@ -749,3 +750,4 @@ renderIncidentsTable()
 <!-- bust 1773270985 -->
 <!-- cache-bust 1773271540 -->
 <!-- bust 1773271712 -->
+<!-- bust 1773271887 -->
