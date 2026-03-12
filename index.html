@@ -134,6 +134,8 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--t1);font-si
 .spike-val{color:#dc2626;font-weight:700}
 .spike-avg{color:#dc2626;font-size:11px;margin-left:4px;font-weight:500}
 .view-link{background:none;border:none;padding:0;margin-left:6px;color:var(--acc);font-size:12px;font-weight:500;text-decoration:underline;cursor:pointer;vertical-align:middle}
+.area-spike{background:#fff5f5;border-left:2px solid #dc2626}
+.site-row-label .anomaly-flag{margin-left:5px;margin-right:0}
 
 /* ══ TABLE ══ */
 .inc-table-wrap{overflow-x:auto}
@@ -391,7 +393,7 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--t1);font-si
   <!-- ══ MAIN ══ -->
   <div class="main">
     <div class="topbar">
-      <div class="topbar-left"><small>Analytics</small><h1>Incidents <span style="font-size:11px;font-weight:400;color:var(--t3);vertical-align:middle">v1.4</span></h1></div>
+      <div class="topbar-left"><small>Analytics</small><h1>Incidents <span style="font-size:11px;font-weight:400;color:var(--t3);vertical-align:middle">v1.5</span></h1></div>
       <div class="topbar-right">
         <button class="btn">↓ PNG</button>
         <button class="btn">↓ CSV</button>
@@ -780,6 +782,65 @@ function findTimelineSpike(siteId){
   const best=rows.reduce((a,b)=>a.total>=b.total?a:b)
   return {label:best.label,pct:Math.round((best.total-avg)/avg*100)}
 }
+// For bar chart: find which active site has the highest spike ratio in a given month
+function findSpikeSiteForPeriod(monthIdx, siteObjs){
+  if(!siteObjs.length) return null
+  if(monthIdx===-1) return CRITICAL_SITE_ID
+  return siteObjs.reduce((bestSite, s)=>{
+    const t=DATA[s.id][monthIdx].reduce((a,b)=>a+b,0)
+    const ratio=t/siteMonthlyAvg(s.id)
+    const bt=DATA[bestSite.id][monthIdx].reduce((a,b)=>a+b,0)
+    return ratio>bt/siteMonthlyAvg(bestSite.id)?s:bestSite
+  }, siteObjs[0]).id
+}
+// Spike path using a specific month's total vals (for drawer)
+function findDrawerSpike(siteId, vals){
+  const struct=DRILLDOWN_STRUCTURE[siteId]; if(!struct) return null
+  const siteTotal=vals.reduce((a,b)=>a+b,0); if(!siteTotal) return null
+  const bldAreaCounts=struct.buildings.map(b=>b.floors.reduce((s,f)=>s+f.areas.length,0))
+  const bldTotalAreas=bldAreaCounts.reduce((a,b)=>a+b,0)
+  let best=null, bestRatio=0
+  struct.buildings.forEach((bld,bi)=>{
+    const bldTotal=Math.round(siteTotal*bldAreaCounts[bi]/bldTotalAreas)
+    const bldAreaTotal=bld.floors.reduce((s,f)=>s+f.areas.length,0)
+    bld.floors.forEach(fl=>{
+      const flTotal=Math.round(bldTotal*(fl.areas.length/bldAreaTotal))
+      const aTotal=Math.round(flTotal/fl.areas.length)
+      const areaCatVals=fl.areas.map(area=>distToVals(area.dist,aTotal))
+      CATS.forEach((_,ci)=>{
+        const catVals=areaCatVals.map(v=>v[ci])
+        const avg=catVals.reduce((a,b)=>a+b,0)/catVals.length
+        if(avg===0) return
+        const maxVal=Math.max(...catVals)
+        const ratio=maxVal/avg
+        if(ratio>bestRatio){
+          bestRatio=ratio
+          const pct=Math.round((maxVal-avg)/avg*100)
+          best={bldId:bld.id,flId:fl.id,areaName:fl.areas[catVals.indexOf(maxVal)].name,catIdx:ci,pct,maxVal}
+        }
+      })
+    })
+  })
+  return best
+}
+// Open drawer and auto-expand to spike building+floor
+function viewSpikeInDrawer(siteId, monthIdx, periodLabel, vals){
+  openDrawer(siteId, monthIdx, periodLabel, vals)
+  const sp=findDrawerSpike(siteId, vals); if(!sp) return
+  expandedBldgs[sp.bldId]=true
+  if(!expandedFloors[sp.bldId]) expandedFloors[sp.bldId]={}
+  expandedFloors[sp.bldId][sp.flId]=true
+  renderDrawerBody()
+  setTimeout(()=>{ const el=document.querySelector('.area-spike'); if(el) el.scrollIntoView({behavior:'smooth',block:'center'}) },80)
+}
+// Expand a specific building+floor in the already-open drawer
+function viewSpikeFloor(bldId, flId){
+  expandedBldgs[bldId]=true
+  if(!expandedFloors[bldId]) expandedFloors[bldId]={}
+  expandedFloors[bldId][flId]=true
+  renderDrawerBody()
+  setTimeout(()=>{ const el=document.querySelector('.area-spike'); if(el) el.scrollIntoView({behavior:'smooth',block:'center'}) },80)
+}
 const ANOMALY_SVG=`<span class="anomaly-flag" title="Spike detected – unusually high activity this month"><svg width="14" height="14" viewBox="0 0 18 18" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M9 1C4.589 1 1 4.5889 1 9C1 13.4111 4.589 17 9 17C13.411 17 17 13.4111 17 9C17 4.5889 13.411 1 9 1ZM8.25 5.4312C8.25 5.0171 8.5859 4.6812 9 4.6812C9.4141 4.6812 9.75 5.0171 9.75 5.4312V9.5C9.75 9.9141 9.4141 10.25 9 10.25C8.5859 10.25 8.25 9.9141 8.25 9.5V5.4312ZM9 13.417C8.448 13.417 8 12.968 8 12.417C8 11.866 8.448 11.417 9 11.417C9.552 11.417 10 11.866 10 12.417C10 12.968 9.552 13.417 9 13.417Z" fill="#EF4444"/></svg></span>`
 
 function distToVals(dist, total){
@@ -1040,6 +1101,7 @@ function renderDrawerBody(){
   const struct = DRILLDOWN_STRUCTURE[siteId]
   if(!struct){ document.getElementById('dr-body').innerHTML='<div style="padding:32px;text-align:center;color:var(--t3)">No detail data available</div>'; return }
 
+  const sp = findDrawerSpike(siteId, vals)
   const bldAreaCounts = struct.buildings.map(b=>b.floors.reduce((s,f)=>s+f.areas.length,0))
   const bldTotalAreas = bldAreaCounts.reduce((a,b)=>a+b,0)
 
@@ -1054,6 +1116,8 @@ function renderDrawerBody(){
     const filtBldTotal = filteredSum(bldVals)
     const isOpen = !!expandedBldgs[bld.id]
     const barChartSVG = buildBarChartSVG(bldVals, filtBldTotal)
+    const isBldSpike = sp && bld.id === sp.bldId
+    const bldSpikeExtra = isBldSpike ? `${ANOMALY_SVG}<button class="view-link" onclick="event.stopPropagation();viewSpikeFloor('${bld.id}','${sp.flId}')">View</button>` : ''
 
     let floorsHtml = ''
     bld.floors.forEach(fl=>{
@@ -1080,18 +1144,22 @@ function renderDrawerBody(){
           const aTotal = Math.round(flTotal*aFrac)
           const aVals = distToVals(area.dist, aTotal)
           const filtATotal = filteredSum(aVals)
+          const isAreaSpike = sp && bld.id===sp.bldId && fl.id===sp.flId && area.name===sp.areaName
           const aBarSegs = activeCats().map(cat=>{
             const ci=CATS.indexOf(cat), v=aVals[ci]||0
             const w=filtATotal>0?(v/filtATotal*100).toFixed(2):0
             return `<div class="area-bar-seg" style="width:${w}%;background:${cat.color}" data-cat="${cat.label}" data-val="${v}"></div>`
           }).join('')
           const avJson = JSON.stringify(aVals).replace(/"/g,'&quot;')
+          const areaNameHtml = isAreaSpike
+            ? `${area.name} — <span class="spike-val">${sp.maxVal} ${CATS[sp.catIdx].label} incidents</span><span class="spike-avg">(+${sp.pct}% vs avg)</span>`
+            : area.name
           areasHtml += `
-            <div class="area-row"
+            <div class="area-row${isAreaSpike?' area-spike':''}"
               onmouseenter="showAreaTip(event,'${area.name}',${avJson},${filtATotal})"
               onmouseleave="hideTip()">
               <div class="area-row-top">
-                <span class="area-name">${area.name}</span>
+                <span class="area-name">${areaNameHtml}</span>
                 <span class="area-count">${filtATotal}</span>
               </div>
               <div class="area-bar-wrap">${aBarSegs}</div>
@@ -1122,6 +1190,7 @@ function renderDrawerBody(){
             <span class="bld-caret">▶</span>
             <span class="bld-name">${bld.name}</span>
             <span class="bld-count">${filtBldTotal} incidents</span>
+            ${bldSpikeExtra}
           </div>
           <div class="bld-barchart">${barChartSVG}</div>
         </div>
@@ -1428,18 +1497,21 @@ function renderBysite(){
 
   inner.innerHTML=periods.map(period=>{
     const pTotal=period.data.reduce((s,d)=>s+filteredSum(d.vals),0)
+    const spikeSiteId=findSpikeSiteForPeriod(period.monthIdx, period.data.map(d=>d.site))
     const rows=period.data.map((d,ri)=>{
       const tot=filteredSum(d.vals)
       const segs=ac.map(cat=>{ const ci=CATS.indexOf(cat),v=d.vals[ci]||0; return v?`<div class="bar-seg" style="width:${(v/max*100).toFixed(2)}%;background:${cat.color}"></div>`:'' }).join('')
       const vj=JSON.stringify(d.vals).replace(/"/g,'&quot;')
       const isHL=drawerState&&drawerState.siteId===d.site.id&&drawerState.monthIdx===period.monthIdx
+      const isSpike=d.site.id===spikeSiteId
+      const spikeExtra=isSpike?`${ANOMALY_SVG}<button class="view-link" onclick="event.stopPropagation();viewSpikeInDrawer('${d.site.id}',${period.monthIdx},'${period.label}',${vj})">View</button>`:''
       return `
         <div class="site-row${isHL?' highlighted':''}" style="animation-delay:${ri*30}ms"
              data-site="${d.site.id}" data-month="${period.monthIdx}"
              onclick="handleSiteRowClick('${d.site.id}',${period.monthIdx},'${period.label}',${vj})"
              onmouseenter="showTip(event,'${d.site.name}',${vj},${tot},'${period.label}')"
              onmouseleave="hideTip()">
-          <div class="site-row-label">${isSiteAnomalous(d.site.id)?ANOMALY_SVG:''}${d.site.name}</div>
+          <div class="site-row-label">${d.site.name}${spikeExtra}</div>
           <div class="site-row-bar">${segs}</div>
           <div class="site-row-total">${tot||'—'}</div>
         </div>`
@@ -1641,7 +1713,7 @@ renderTimeline(); renderTimelineTable(); updateKPIs(); renderIncidentsTable()
 </script>
 </body>
 </html>
-<!-- bust 1741771200 -->
+<!-- bust 1741772000 -->
 <!-- Wed Mar 11 12:56:49 CET 2026 -->
 <!-- cache-bust 1773258729 -->
 <!-- bust 1773281659 -->
