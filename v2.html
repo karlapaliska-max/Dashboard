@@ -798,7 +798,7 @@ function renderIncidentsTable(){
   let html=`<tr class="total-row"><td style="font-weight:600">Total</td>${numCell(gt,true)}${gc.map(v=>numCell(v)).join('')}</tr>`
   rows.forEach(r=>{
     const ex=!!tableExpandState[r.site.id]
-    html+=`<tr class="site-row" onclick="openSiteDrawer('${r.site.id}')"><td style="white-space:nowrap"><button class="expand-btn${ex?' open':''}" onclick="event.stopPropagation();toggleTableRow('${r.site.id}')"><span class="tri">▶</span></button><span class="site-name-link">${r.site.name}</span></td>${numCell(r.total,true)}${r.cats.map(v=>numCell(v)).join('')}</tr>`
+    html+=`<tr class="site-row" data-siteid="${r.site.id}"><td style="white-space:nowrap"><button class="expand-btn${ex?' open':''}" onclick="toggleTableRow('${r.site.id}')"  data-expand="1"><span class="tri">▶</span></button><span class="site-name-link">${r.site.name}</span></td>${numCell(r.total,true)}${r.cats.map(v=>numCell(v)).join('')}</tr>`
     if(ex){
       const struct=DRILLDOWN_STRUCTURE[r.site.id]
       if(!struct) return
@@ -1061,6 +1061,18 @@ document.addEventListener('click',e=>{
 })()
 
 // ─────────────────────────────────────────────
+// TABLE ROW CLICK — event delegation
+// ─────────────────────────────────────────────
+document.addEventListener('click', function(e){
+  const row = e.target.closest('tr.site-row')
+  if(!row) return
+  const btn = e.target.closest('.expand-btn')
+  if(btn) return // expand button handled separately
+  const siteId = row.dataset.siteid
+  if(siteId) openSiteDrawer(siteId)
+})
+
+// ─────────────────────────────────────────────
 // INIT
 // ─────────────────────────────────────────────
 renderLocChips()
@@ -1079,3 +1091,4 @@ renderIncidentsTable()
 <!-- bust 1773272799 -->
 <!-- bust 1773273143 -->
 <!-- bust 1773273399 -->
+<!-- bust 1773274371 -->
