@@ -129,7 +129,11 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--t1);font-si
 .site-row-total{font-family:'JetBrains Mono',monospace;font-size:14px;font-weight:500;color:var(--t2);width:44px;text-align:right;flex-shrink:0}
 .empty-state{padding:48px;text-align:center;color:var(--t3)}
 .empty-state strong{display:block;font-size:14px;color:var(--t2);margin-bottom:4px}
-.anomaly-flag{display:inline-flex;align-items:center;vertical-align:middle;margin-left:5px;flex-shrink:0;opacity:.9}
+.anomaly-flag{display:inline-flex;align-items:center;vertical-align:middle;margin-left:5px;margin-right:0;flex-shrink:0;opacity:.9}
+.site-row-label .anomaly-flag{margin-left:0;margin-right:5px}
+.spike-val{color:#dc2626;font-weight:700}
+.spike-avg{color:#dc2626;font-size:11px;margin-left:4px;font-weight:500}
+.view-link{background:none;border:none;padding:0;margin-left:6px;color:var(--acc);font-size:12px;font-weight:500;text-decoration:underline;cursor:pointer;vertical-align:middle}
 
 /* ══ TABLE ══ */
 .inc-table-wrap{overflow-x:auto}
@@ -731,7 +735,51 @@ function filteredSum(vals){ return activeIdx().reduce((s,i)=>s+(vals[i]||0),0) }
 function yearData(id){ return DATA[id].reduce((a,mo)=>{mo.forEach((v,i)=>a[i]=(a[i]||0)+v);return a},new Array(CATS.length).fill(0)) }
 function siteMonthlyAvg(siteId){ const t=DATA[siteId].map(mo=>mo.reduce((s,v)=>s+(v||0),0)); return t.reduce((s,v)=>s+v,0)/t.length }
 function isMonthAnomalous(siteId,monthTotal){ return monthTotal>siteMonthlyAvg(siteId)*1.2 }
-function isSiteAnomalous(siteId){ const t=DATA[siteId].map(mo=>mo.reduce((s,v)=>s+(v||0),0)); return t.some(v=>v>siteMonthlyAvg(siteId)*1.2) }
+const CRITICAL_SITE_ID=(()=>SITES.reduce((bestId,s)=>{
+  const t=DATA[s.id].map(mo=>mo.reduce((sum,v)=>sum+v,0))
+  const avg=t.reduce((sum,v)=>sum+v,0)/t.length
+  const ratio=Math.max(...t)/avg
+  const bt=DATA[bestId].map(mo=>mo.reduce((sum,v)=>sum+v,0))
+  const bavg=bt.reduce((sum,v)=>sum+v,0)/bt.length
+  return ratio>Math.max(...bt)/bavg?s.id:bestId
+},SITES[0].id))()
+function isSiteAnomalous(siteId){ return siteId===CRITICAL_SITE_ID }
+function siteAnnualTotal(siteId){ return DATA[siteId].reduce((s,mo)=>s+mo.reduce((a,b)=>a+b,0),0) }
+function findSpikePath(siteId){
+  const struct=DRILLDOWN_STRUCTURE[siteId]; if(!struct) return null
+  const siteTotal=siteAnnualTotal(siteId)
+  const bldAreaCounts=struct.buildings.map(b=>b.floors.reduce((s,f)=>s+f.areas.length,0))
+  const bldTotalAreas=bldAreaCounts.reduce((a,b)=>a+b,0)
+  let best=null, bestRatio=0
+  struct.buildings.forEach((bld,bi)=>{
+    const bldTotal=Math.round(siteTotal*bldAreaCounts[bi]/bldTotalAreas)
+    const bldAreaTotal=bld.floors.reduce((s,f)=>s+f.areas.length,0)
+    bld.floors.forEach(fl=>{
+      const flTotal=Math.round(bldTotal*(fl.areas.length/bldAreaTotal))
+      const aTotal=Math.round(flTotal/fl.areas.length)
+      const areaCatVals=fl.areas.map(area=>distToVals(area.dist,aTotal))
+      CATS.forEach((_,ci)=>{
+        const vals=areaCatVals.map(v=>v[ci])
+        const avg=vals.reduce((a,b)=>a+b,0)/vals.length
+        if(avg===0) return
+        const maxVal=Math.max(...vals)
+        const ratio=maxVal/avg
+        if(ratio>bestRatio){
+          bestRatio=ratio
+          const pct=Math.round((maxVal-avg)/avg*100)
+          best={bldId:bld.id,flId:fl.id,areaName:fl.areas[vals.indexOf(maxVal)].name,catIdx:ci,pct}
+        }
+      })
+    })
+  })
+  return best
+}
+function findTimelineSpike(siteId){
+  const rows=tlMonthRows(siteId)
+  const avg=rows.reduce((s,r)=>s+r.total,0)/rows.length
+  const best=rows.reduce((a,b)=>a.total>=b.total?a:b)
+  return {label:best.label,pct:Math.round((best.total-avg)/avg*100)}
+}
 const ANOMALY_SVG=`<span class="anomaly-flag" title="Spike detected – unusually high activity this month"><svg width="14" height="14" viewBox="0 0 18 18" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M9 1C4.589 1 1 4.5889 1 9C1 13.4111 4.589 17 9 17C13.411 17 17 13.4111 17 9C17 4.5889 13.411 1 9 1ZM8.25 5.4312C8.25 5.0171 8.5859 4.6812 9 4.6812C9.4141 4.6812 9.75 5.0171 9.75 5.4312V9.5C9.75 9.9141 9.4141 10.25 9 10.25C8.5859 10.25 8.25 9.9141 8.25 9.5V5.4312ZM9 13.417C8.448 13.417 8 12.968 8 12.417C8 11.866 8.448 11.417 9 11.417C9.552 11.417 10 11.866 10 12.417C10 12.968 9.552 13.417 9 13.417Z" fill="#EF4444"/></svg></span>`
 
 function distToVals(dist, total){
@@ -1391,7 +1439,7 @@ function renderBysite(){
              onclick="handleSiteRowClick('${d.site.id}',${period.monthIdx},'${period.label}',${vj})"
              onmouseenter="showTip(event,'${d.site.name}',${vj},${tot},'${period.label}')"
              onmouseleave="hideTip()">
-          <div class="site-row-label">${d.site.name}${isSiteAnomalous(d.site.id)?ANOMALY_SVG:''}</div>
+          <div class="site-row-label">${isSiteAnomalous(d.site.id)?ANOMALY_SVG:''}${d.site.name}</div>
           <div class="site-row-bar">${segs}</div>
           <div class="site-row-total">${tot||'—'}</div>
         </div>`
@@ -1438,14 +1486,21 @@ function renderIncidentsTable(){
   if(!as.length){ tbody.innerHTML=`<tr><td colspan="${2+TCOLS.length}" style="text-align:center;padding:32px;color:var(--t3)">No sites selected</td></tr>`; return }
   const rows=as.map(s=>{ const cats=siteYearCatTotals(s.id); return {site:s,cats,total:cats.reduce((a,b)=>a+b,0)} })
   const gc=CATS.map((_,ci)=>rows.reduce((s,r)=>s+r.cats[ci],0)), gt=gc.reduce((a,b)=>a+b,0)
-  const numCell=(v,bold=false)=>v?`<td class="num${bold?' bold':''}">${v}</td>`:`<td class="num" style="color:var(--border2)">—</td>`
+  const numCell=(v,bold=false,spike=null)=>{
+    if(!v) return `<td class="num" style="color:var(--border2)">—</td>`
+    if(spike) return `<td class="num${bold?' bold':''}"><span class="spike-val">${v}</span><span class="spike-avg">(+${spike.pct}% vs avg)</span></td>`
+    return `<td class="num${bold?' bold':''}">${v}</td>`
+  }
   let html=`<tr class="total-row"><td style="font-weight:600">Total</td>${numCell(gt,true)}${gc.map(v=>numCell(v)).join('')}</tr>`
   rows.forEach(r=>{
     const ex=!!tableExpandState[r.site.id]
-    html+=`<tr><td><button class="expand-btn${ex?' open':''}" onclick="toggleTableRow('${r.site.id}')"><span class="tri">▶</span>${r.site.name}</button>${isSiteAnomalous(r.site.id)?ANOMALY_SVG:''}</td>${numCell(r.total,true)}${r.cats.map(v=>numCell(v)).join('')}</tr>`
+    const isAnomaly=isSiteAnomalous(r.site.id)
+    const siteExtras=isAnomaly?`${ANOMALY_SVG}<button class="view-link" onclick="event.stopPropagation();viewSpike('${r.site.id}')">View</button>`:''
+    html+=`<tr class="site-row" data-siteid="${r.site.id}" style="cursor:pointer" onclick="toggleTableRow('${r.site.id}')"><td><button class="expand-btn${ex?' open':''}" onclick="event.stopPropagation();toggleTableRow('${r.site.id}')"><span class="tri">▶</span>${r.site.name}</button>${siteExtras}</td>${numCell(r.total,true)}${r.cats.map(v=>numCell(v)).join('')}</tr>`
     if(ex){
       const struct=DRILLDOWN_STRUCTURE[r.site.id]
       if(!struct) return
+      const sp=isAnomaly?findSpikePath(r.site.id):null
       const bldAreaCounts=struct.buildings.map(b=>b.floors.reduce((s,f)=>s+f.areas.length,0))
       const bldTotalAreas=bldAreaCounts.reduce((a,b)=>a+b,0)
       struct.buildings.forEach((bld,bi)=>{
@@ -1467,7 +1522,10 @@ function renderIncidentsTable(){
               fl.areas.forEach(area=>{
                 const aTotal=Math.round(flTotal/fl.areas.length)
                 const aCats=distToVals(area.dist,aTotal)
-                html+=`<tr class="subrow subrow-l3"><td>${area.name}</td>${numCell(aTotal)}${aCats.map(v=>numCell(v)).join('')}</tr>`
+                const isSpike=sp&&bld.id===sp.bldId&&fl.id===sp.flId&&area.name===sp.areaName
+                const aIcon=isSpike?ANOMALY_SVG:''
+                const catCells=aCats.map((v,ci)=>numCell(v,false,isSpike&&ci===sp.catIdx?{pct:sp.pct}:null)).join('')
+                html+=`<tr class="subrow subrow-l3"><td>${area.name}${aIcon}</td>${numCell(aTotal)}${catCells}</tr>`
               })
             }
           })
@@ -1480,6 +1538,14 @@ function renderIncidentsTable(){
 function toggleTableRow(id){ tableExpandState[id]=!tableExpandState[id]; renderIncidentsTable() }
 function toggleTableBld(siteId,bldId){ const k=siteId+'|'+bldId; tableBldState[k]=!tableBldState[k]; renderIncidentsTable() }
 function toggleTableFloor(siteId,bldId,flId){ const k=siteId+'|'+bldId+'|'+flId; tableFloorState[k]=!tableFloorState[k]; renderIncidentsTable() }
+function viewSpike(siteId){
+  const p=findSpikePath(siteId); if(!p) return
+  tableExpandState[siteId]=true
+  tableBldState[siteId+'|'+p.bldId]=true
+  tableFloorState[siteId+'|'+p.bldId+'|'+p.flId]=true
+  renderIncidentsTable()
+  setTimeout(()=>{ const el=document.querySelector('#inc-tbody .spike-val'); if(el) el.closest('tr')?.scrollIntoView({behavior:'smooth',block:'center'}) },80)
+}
 
 // ─────────────────────────────────────────────
 // TIMELINE TABLE (Site Breakdown by Time)
@@ -1520,18 +1586,33 @@ function renderTimelineTable(){
   if(!as.length){ tbody.innerHTML=`<tr><td colspan="${2+TCOLS.length}" style="text-align:center;padding:32px;color:var(--t3)">No sites selected</td></tr>`; return }
   const rows=as.map(s=>{ const cats=siteYearCatTotals(s.id); return {site:s,cats,total:cats.reduce((a,b)=>a+b,0)} })
   const gc=CATS.map((_,ci)=>rows.reduce((s,r)=>s+r.cats[ci],0)), gt=gc.reduce((a,b)=>a+b,0)
-  const numCell=(v,bold=false)=>v?`<td class="num${bold?' bold':''}">${v}</td>`:`<td class="num" style="color:var(--border2)">—</td>`
+  const numCell=(v,bold=false,spike=null)=>{
+    if(!v) return `<td class="num" style="color:var(--border2)">—</td>`
+    if(spike) return `<td class="num${bold?' bold':''}"><span class="spike-val">${v}</span><span class="spike-avg">(+${spike.pct}% vs avg)</span></td>`
+    return `<td class="num${bold?' bold':''}">${v}</td>`
+  }
   let html=`<tr class="total-row"><td style="font-weight:600">Total</td>${numCell(gt,true)}${gc.map(v=>numCell(v)).join('')}</tr>`
   rows.forEach(r=>{
     const ex=!!tlTableExpandState[r.site.id]
+    const isAnomaly=isSiteAnomalous(r.site.id)
     const subRows=tlTableGran==='week'?tlWeekRows(r.site.id):tlMonthRows(r.site.id)
-    html+=`<tr><td><button class="expand-btn${ex?' open':''}" onclick="toggleTLTableRow('${r.site.id}')"><span class="tri">▶</span>${r.site.name}</button>${isSiteAnomalous(r.site.id)?ANOMALY_SVG:''}</td>${numCell(r.total,true)}${r.cats.map(v=>numCell(v)).join('')}</tr>`
-    if(ex) subRows.forEach(sr=>{ if(sr.total) html+=`<tr class="subrow"><td>${sr.label}${isMonthAnomalous(r.site.id,sr.total)?ANOMALY_SVG:''}</td>${numCell(sr.total)}${sr.cats.map(v=>numCell(v)).join('')}</tr>` })
+    const tlSpike=isAnomaly?findTimelineSpike(r.site.id):null
+    const siteExtras=isAnomaly?`${ANOMALY_SVG}<button class="view-link" onclick="event.stopPropagation();viewSpikeTimeline('${r.site.id}')">View</button>`:''
+    html+=`<tr><td><button class="expand-btn${ex?' open':''}" onclick="toggleTLTableRow('${r.site.id}')"><span class="tri">▶</span>${r.site.name}</button>${siteExtras}</td>${numCell(r.total,true)}${r.cats.map(v=>numCell(v)).join('')}</tr>`
+    if(ex) subRows.forEach(sr=>{
+      if(!sr.total) return
+      const isSpike=tlSpike&&sr.label===tlSpike.label
+      html+=`<tr class="subrow"><td>${sr.label}${isSpike?ANOMALY_SVG:''}</td>${numCell(sr.total,false,isSpike?{pct:tlSpike.pct}:null)}${sr.cats.map(v=>numCell(v)).join('')}</tr>`
+    })
   })
   tbody.innerHTML=html
 }
 function toggleTLTableRow(id){ tlTableExpandState[id]=!tlTableExpandState[id]; renderTimelineTable() }
 function setTLTableGran(mode,btn){ tlTableGran=mode; btn.closest('.gran-toggle').querySelectorAll('.gb').forEach(b=>b.classList.remove('on')); btn.classList.add('on'); renderTimelineTable() }
+function viewSpikeTimeline(siteId){
+  tlTableExpandState[siteId]=true; renderTimelineTable()
+  setTimeout(()=>{ const el=document.querySelector('#tl-inc-tbody .spike-val'); if(el) el.closest('tr')?.scrollIntoView({behavior:'smooth',block:'center'}) },80)
+}
 
 // ─────────────────────────────────────────────
 // TAB & GRAN
@@ -1560,7 +1641,7 @@ renderTimeline(); renderTimelineTable(); updateKPIs(); renderIncidentsTable()
 </script>
 </body>
 </html>
-<!-- bust 1773400100 -->
+<!-- bust 1741769800 -->
 <!-- Wed Mar 11 12:56:49 CET 2026 -->
 <!-- cache-bust 1773258729 -->
 <!-- bust 1773281659 -->
