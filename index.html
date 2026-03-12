@@ -391,7 +391,7 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--t1);font-si
   <!-- ══ MAIN ══ -->
   <div class="main">
     <div class="topbar">
-      <div class="topbar-left"><small>Analytics</small><h1>Incidents <span style="font-size:11px;font-weight:400;color:var(--t3);vertical-align:middle">v1.3</span></h1></div>
+      <div class="topbar-left"><small>Analytics</small><h1>Incidents <span style="font-size:11px;font-weight:400;color:var(--t3);vertical-align:middle">v1.4</span></h1></div>
       <div class="topbar-right">
         <button class="btn">↓ PNG</button>
         <button class="btn">↓ CSV</button>
@@ -1495,8 +1495,8 @@ function renderIncidentsTable(){
   rows.forEach(r=>{
     const ex=!!tableExpandState[r.site.id]
     const isAnomaly=isSiteAnomalous(r.site.id)
-    const siteExtras=isAnomaly?`${ANOMALY_SVG}<button class="view-link" onclick="event.stopPropagation();viewSpike('${r.site.id}')">View</button>`:''
-    html+=`<tr class="site-row" data-siteid="${r.site.id}" style="cursor:pointer" onclick="toggleTableRow('${r.site.id}')"><td><button class="expand-btn${ex?' open':''}" onclick="event.stopPropagation();toggleTableRow('${r.site.id}')"><span class="tri">▶</span>${r.site.name}</button>${siteExtras}</td>${numCell(r.total,true)}${r.cats.map(v=>numCell(v)).join('')}</tr>`
+    const siteExtras=isAnomaly?`${ANOMALY_SVG}<button class="view-link" onclick="event.stopPropagation();event.preventDefault();viewSpike('${r.site.id}')">View</button>`:''
+    html+=`<tr><td><button class="expand-btn${ex?' open':''}" onclick="toggleTableRow('${r.site.id}')"><span class="tri">▶</span>${r.site.name}</button>${siteExtras}</td>${numCell(r.total,true)}${r.cats.map(v=>numCell(v)).join('')}</tr>`
     if(ex){
       const struct=DRILLDOWN_STRUCTURE[r.site.id]
       if(!struct) return
@@ -1641,7 +1641,7 @@ renderTimeline(); renderTimelineTable(); updateKPIs(); renderIncidentsTable()
 </script>
 </body>
 </html>
-<!-- bust 1741770500 -->
+<!-- bust 1741771200 -->
 <!-- Wed Mar 11 12:56:49 CET 2026 -->
 <!-- cache-bust 1773258729 -->
 <!-- bust 1773281659 -->
