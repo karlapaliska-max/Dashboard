@@ -402,7 +402,7 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--t1);font-si
   <!-- ══ MAIN ══ -->
   <div class="main">
     <div class="topbar">
-      <div class="topbar-left"><small>Analytics</small><h1>Incidents <span style="font-size:11px;font-weight:400;color:var(--t3);vertical-align:middle">v2.15</span></h1></div>
+      <div class="topbar-left"><small>Analytics</small><h1>Incidents <span style="font-size:11px;font-weight:400;color:var(--t3);vertical-align:middle">v2.16</span></h1></div>
       <div class="topbar-right">
         <button class="btn">↓ PNG</button>
         <button class="btn">↓ CSV</button>
@@ -858,6 +858,7 @@ function viewSpikeFloor(bldId, flId){
   setTimeout(()=>{ const el=document.querySelector('.area-spike'); if(el) el.scrollIntoView({behavior:'smooth',block:'center'}) },80)
 }
 const ANOMALY_SVG=`<span class="anomaly-flag" title="Spike detected – unusually high activity this month"><svg width="14" height="14" viewBox="0 0 18 18" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M9 1C4.589 1 1 4.5889 1 9C1 13.4111 4.589 17 9 17C13.411 17 17 13.4111 17 9C17 4.5889 13.411 1 9 1ZM8.25 5.4312C8.25 5.0171 8.5859 4.6812 9 4.6812C9.4141 4.6812 9.75 5.0171 9.75 5.4312V9.5C9.75 9.9141 9.4141 10.25 9 10.25C8.5859 10.25 8.25 9.9141 8.25 9.5V5.4312ZM9 13.417C8.448 13.417 8 12.968 8 12.417C8 11.866 8.448 11.417 9 11.417C9.552 11.417 10 11.866 10 12.417C10 12.968 9.552 13.417 9 13.417Z" fill="#EF4444"/></svg></span>`
+const ANOMALY_SVG_SM=`<span class="anomaly-flag" title="Spike detected – unusually high activity this month"><svg width="12" height="12" viewBox="0 0 18 18" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M9 1C4.589 1 1 4.5889 1 9C1 13.4111 4.589 17 9 17C13.411 17 17 13.4111 17 9C17 4.5889 13.411 1 9 1ZM8.25 5.4312C8.25 5.0171 8.5859 4.6812 9 4.6812C9.4141 4.6812 9.75 5.0171 9.75 5.4312V9.5C9.75 9.9141 9.4141 10.25 9 10.25C8.5859 10.25 8.25 9.9141 8.25 9.5V5.4312ZM9 13.417C8.448 13.417 8 12.968 8 12.417C8 11.866 8.448 11.417 9 11.417C9.552 11.417 10 11.866 10 12.417C10 12.968 9.552 13.417 9 13.417Z" fill="#EF4444"/></svg></span>`
 
 function distToVals(dist, total){
   const sum = dist.reduce((a,b)=>a+b,0)
@@ -1133,7 +1134,7 @@ function renderDrawerBody(){
     const isOpen = !!expandedBldgs[bld.id]
     const barChartSVG = buildBarChartSVG(bldVals, filtBldTotal)
     const isBldSpike = sp && bld.id === sp.bldId
-    const bldSpikeExtra = isBldSpike ? `${ANOMALY_SVG}<button class="view-link" style="margin-left:0" onclick="event.stopPropagation();viewSpikeFloor('${bld.id}','${sp.flId}')">View issue</button>` : ''
+    const bldSpikeExtra = isBldSpike ? `${ANOMALY_SVG_SM}<button class="view-link" style="margin-left:0" onclick="event.stopPropagation();viewSpikeFloor('${bld.id}','${sp.flId}')">View issue</button>` : ''
 
     let floorsHtml = ''
     bld.floors.forEach(fl=>{
