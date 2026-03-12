@@ -788,8 +788,9 @@ let tableExpandState={}, tableBldState={}, tableFloorState={}
 
 function distToVals(dist,total){const sum=dist.reduce((a,b)=>a+b,0);return dist.map(d=>Math.round((d/sum)*total))}
 function siteYearCatTotals(id){return CATS.map((_,ci)=>DATA[id].reduce((s,mo)=>s+(mo[ci]||0),0))}
-function isSiteAnomalous(siteId){ const t=DATA[siteId].map(mo=>mo.reduce((s,v)=>s+(v||0),0)); const avg=t.reduce((s,v)=>s+v,0)/t.length; return Math.max(...t)>avg*1.33 }
-const ANOMALY_SVG=`<span class="anomaly-flag" title="Anomaly detected – unusually high incident activity in at least one month"><svg width="14" height="14" viewBox="0 0 16 16"><path d="M8 1.5L15 14H1L8 1.5Z" fill="#EF4444"/><rect x="7.2" y="5.5" width="1.6" height="4.5" rx=".8" fill="#fff"/><circle cx="8" cy="11.8" r=".9" fill="#fff"/></svg></span>`
+function siteMonthlyAvg(siteId){ const t=DATA[siteId].map(mo=>mo.reduce((s,v)=>s+(v||0),0)); return t.reduce((s,v)=>s+v,0)/t.length }
+function isSiteAnomalous(siteId){ const t=DATA[siteId].map(mo=>mo.reduce((s,v)=>s+(v||0),0)); return t.some(v=>v>siteMonthlyAvg(siteId)*1.2) }
+const ANOMALY_SVG=`<span class="anomaly-flag" title="Spike detected – unusually high activity in at least one month"><svg width="14" height="14" viewBox="0 0 16 16"><path d="M8 1.5L15 14H1L8 1.5Z" fill="#EF4444"/><rect x="7.2" y="5.5" width="1.6" height="4.5" rx=".8" fill="#fff"/><circle cx="8" cy="11.8" r=".9" fill="#fff"/></svg></span>`
 
 function renderIncidentsTable(){
   const as=SITES, thead=document.getElementById('inc-thead'), tbody=document.getElementById('inc-tbody')
@@ -801,7 +802,7 @@ function renderIncidentsTable(){
   let html=`<tr class="total-row"><td style="font-weight:600">Total</td>${numCell(gt,true)}${gc.map(v=>numCell(v)).join('')}</tr>`
   rows.forEach(r=>{
     const ex=!!tableExpandState[r.site.id]
-    html+=`<tr class="site-row" data-siteid="${r.site.id}"><td style="white-space:nowrap">${isSiteAnomalous(r.site.id)?ANOMALY_SVG:''}<button class="expand-btn${ex?' open':''}" onclick="toggleTableRow('${r.site.id}')" data-expand="1"><span class="tri">▶</span></button><span class="site-name-link">${r.site.name}</span></td>${numCell(r.total,true)}${r.cats.map(v=>numCell(v)).join('')}</tr>`
+    html+=`<tr class="site-row" data-siteid="${r.site.id}"><td style="white-space:nowrap"><button class="expand-btn${ex?' open':''}" onclick="toggleTableRow('${r.site.id}')" data-expand="1"><span class="tri">▶</span></button><span class="site-name-link">${r.site.name}</span>${isSiteAnomalous(r.site.id)?ANOMALY_SVG:''}</td>${numCell(r.total,true)}${r.cats.map(v=>numCell(v)).join('')}</tr>`
     if(ex){
       const struct=DRILLDOWN_STRUCTURE[r.site.id]
       if(!struct) return

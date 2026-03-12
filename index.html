@@ -729,8 +729,10 @@ function activeIdx(){ return CATS.map((c,i)=>catActive[c.id]?i:-1).filter(i=>i>=
 function activeSites(){ return SITES.filter(s=>siteActive[s.id]) }
 function filteredSum(vals){ return activeIdx().reduce((s,i)=>s+(vals[i]||0),0) }
 function yearData(id){ return DATA[id].reduce((a,mo)=>{mo.forEach((v,i)=>a[i]=(a[i]||0)+v);return a},new Array(CATS.length).fill(0)) }
-function isSiteAnomalous(siteId){ const t=DATA[siteId].map(mo=>mo.reduce((s,v)=>s+(v||0),0)); const avg=t.reduce((s,v)=>s+v,0)/t.length; return Math.max(...t)>avg*1.33 }
-const ANOMALY_SVG=`<span class="anomaly-flag" title="Anomaly detected – unusually high incident activity in at least one month"><svg width="14" height="14" viewBox="0 0 16 16"><path d="M8 1.5L15 14H1L8 1.5Z" fill="#EF4444"/><rect x="7.2" y="5.5" width="1.6" height="4.5" rx=".8" fill="#fff"/><circle cx="8" cy="11.8" r=".9" fill="#fff"/></svg></span>`
+function siteMonthlyAvg(siteId){ const t=DATA[siteId].map(mo=>mo.reduce((s,v)=>s+(v||0),0)); return t.reduce((s,v)=>s+v,0)/t.length }
+function isMonthAnomalous(siteId,monthTotal){ return monthTotal>siteMonthlyAvg(siteId)*1.2 }
+function isSiteAnomalous(siteId){ const t=DATA[siteId].map(mo=>mo.reduce((s,v)=>s+(v||0),0)); return t.some(v=>v>siteMonthlyAvg(siteId)*1.2) }
+const ANOMALY_SVG=`<span class="anomaly-flag" title="Spike detected – unusually high activity this month"><svg width="14" height="14" viewBox="0 0 16 16"><path d="M8 1.5L15 14H1L8 1.5Z" fill="#EF4444"/><rect x="7.2" y="5.5" width="1.6" height="4.5" rx=".8" fill="#fff"/><circle cx="8" cy="11.8" r=".9" fill="#fff"/></svg></span>`
 
 function distToVals(dist, total){
   const sum = dist.reduce((a,b)=>a+b,0)
@@ -1389,7 +1391,7 @@ function renderBysite(){
              onclick="handleSiteRowClick('${d.site.id}',${period.monthIdx},'${period.label}',${vj})"
              onmouseenter="showTip(event,'${d.site.name}',${vj},${tot},'${period.label}')"
              onmouseleave="hideTip()">
-          <div class="site-row-label">${isSiteAnomalous(d.site.id)?ANOMALY_SVG:''}${d.site.name}</div>
+          <div class="site-row-label">${d.site.name}${isSiteAnomalous(d.site.id)?ANOMALY_SVG:''}</div>
           <div class="site-row-bar">${segs}</div>
           <div class="site-row-total">${tot||'—'}</div>
         </div>`
@@ -1440,7 +1442,7 @@ function renderIncidentsTable(){
   let html=`<tr class="total-row"><td style="font-weight:600">Total</td>${numCell(gt,true)}${gc.map(v=>numCell(v)).join('')}</tr>`
   rows.forEach(r=>{
     const ex=!!tableExpandState[r.site.id]
-    html+=`<tr><td>${isSiteAnomalous(r.site.id)?ANOMALY_SVG:''}<button class="expand-btn${ex?' open':''}" onclick="toggleTableRow('${r.site.id}')"><span class="tri">▶</span>${r.site.name}</button></td>${numCell(r.total,true)}${r.cats.map(v=>numCell(v)).join('')}</tr>`
+    html+=`<tr><td><button class="expand-btn${ex?' open':''}" onclick="toggleTableRow('${r.site.id}')"><span class="tri">▶</span>${r.site.name}</button>${isSiteAnomalous(r.site.id)?ANOMALY_SVG:''}</td>${numCell(r.total,true)}${r.cats.map(v=>numCell(v)).join('')}</tr>`
     if(ex){
       const struct=DRILLDOWN_STRUCTURE[r.site.id]
       if(!struct) return
@@ -1523,8 +1525,8 @@ function renderTimelineTable(){
   rows.forEach(r=>{
     const ex=!!tlTableExpandState[r.site.id]
     const subRows=tlTableGran==='week'?tlWeekRows(r.site.id):tlMonthRows(r.site.id)
-    html+=`<tr><td>${isSiteAnomalous(r.site.id)?ANOMALY_SVG:''}<button class="expand-btn${ex?' open':''}" onclick="toggleTLTableRow('${r.site.id}')"><span class="tri">▶</span>${r.site.name}</button></td>${numCell(r.total,true)}${r.cats.map(v=>numCell(v)).join('')}</tr>`
-    if(ex) subRows.forEach(sr=>{ if(sr.total) html+=`<tr class="subrow"><td>${sr.label}</td>${numCell(sr.total)}${sr.cats.map(v=>numCell(v)).join('')}</tr>` })
+    html+=`<tr><td><button class="expand-btn${ex?' open':''}" onclick="toggleTLTableRow('${r.site.id}')"><span class="tri">▶</span>${r.site.name}</button>${isSiteAnomalous(r.site.id)?ANOMALY_SVG:''}</td>${numCell(r.total,true)}${r.cats.map(v=>numCell(v)).join('')}</tr>`
+    if(ex) subRows.forEach(sr=>{ if(sr.total) html+=`<tr class="subrow"><td>${sr.label}${isMonthAnomalous(r.site.id,sr.total)?ANOMALY_SVG:''}</td>${numCell(sr.total)}${sr.cats.map(v=>numCell(v)).join('')}</tr>` })
   })
   tbody.innerHTML=html
 }
