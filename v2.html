@@ -130,6 +130,19 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--t1);font-si
 .inc-table tr.site-row{cursor:pointer}
 .inc-table tr.site-row:hover td{background:color-mix(in srgb,#3B82F6 6%,var(--surface) 94%)}
 
+/* ══ SPIKE HIGHLIGHT ══ */
+.spike-val{color:#EF4444;font-weight:700}
+.spike-avg{font-size:10px;color:#EF4444;font-weight:500;margin-left:4px;opacity:.8;font-family:'Inter',sans-serif}
+
+/* ══ KPI TILES ══ */
+.kpis{display:grid;grid-template-columns:repeat(5,1fr);gap:12px;margin-bottom:20px}
+.kpi{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:14px 16px;position:relative;overflow:hidden;--kpi-top:var(--acc)}
+.kpi::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;background:var(--kpi-top)}
+.kpi-lbl{font-size:11px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--t3);margin-bottom:4px}
+.kpi-val{font-family:'JetBrains Mono',monospace;font-size:24px;font-weight:500;color:var(--t1);line-height:1.1}
+.kpi-val.sm{font-size:18px}
+.kpi-sub{font-size:12px;color:var(--t2);margin-top:5px;font-weight:500}
+
 /* ══ DRILLDOWN DRAWER ══ */
 .drawer-overlay{position:fixed;inset:0;background:rgba(0,0,0,.52);z-index:300;opacity:0;pointer-events:none;transition:opacity .28s ease}
 .drawer-overlay.active{opacity:1;pointer-events:auto}
@@ -225,6 +238,9 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--t1);font-si
     </div>
 
     <div class="content">
+
+      <!-- ── KPI Tiles ── -->
+      <div class="kpis" id="kpis"></div>
 
       <!-- ── Trend Chart Card ── -->
       <div class="card" id="trend-card">
@@ -788,8 +804,36 @@ let tableExpandState={}, tableBldState={}, tableFloorState={}
 
 function distToVals(dist,total){const sum=dist.reduce((a,b)=>a+b,0);return dist.map(d=>Math.round((d/sum)*total))}
 function siteYearCatTotals(id){return CATS.map((_,ci)=>DATA[id].reduce((s,mo)=>s+(mo[ci]||0),0))}
-function siteMonthlyAvg(siteId){ const t=DATA[siteId].map(mo=>mo.reduce((s,v)=>s+(v||0),0)); return t.reduce((s,v)=>s+v,0)/t.length }
-function isSiteAnomalous(siteId){ const t=DATA[siteId].map(mo=>mo.reduce((s,v)=>s+(v||0),0)); return t.some(v=>v>siteMonthlyAvg(siteId)*1.2) }
+function numCell(v,bold=false,spikeAvg=null){
+  if(!v) return `<td class="num" style="color:var(--border2)">—</td>`
+  if(spikeAvg!==null&&v>spikeAvg*1.3) return `<td class="num${bold?' bold':''}"><span class="spike-val">${v}</span><span class="spike-avg">avg:${Math.round(spikeAvg)}</span></td>`
+  return `<td class="num${bold?' bold':''}">${v}</td>`
+}
+function siteAnnualTotal(siteId){ return DATA[siteId].reduce((s,mo)=>s+mo.reduce((a,v)=>a+(v||0),0),0) }
+// Only flag the single most critical site (highest monthly spike ratio)
+const CRITICAL_SITE_ID=(()=>SITES.reduce((bestId,s)=>{
+  const t=DATA[s.id].map(mo=>mo.reduce((sum,v)=>sum+v,0))
+  const avg=t.reduce((sum,v)=>sum+v,0)/t.length
+  const ratio=Math.max(...t)/avg
+  const bt=DATA[bestId].map(mo=>mo.reduce((sum,v)=>sum+v,0))
+  const bavg=bt.reduce((sum,v)=>sum+v,0)/bt.length
+  return ratio>Math.max(...bt)/bavg?s.id:bestId
+},SITES[0].id))()
+function isSiteAnomalous(siteId){ return siteId===CRITICAL_SITE_ID }
+// Hierarchy hot-path helpers: find which building/floor/area has the most incidents
+function hotBldId(siteId){
+  const struct=DRILLDOWN_STRUCTURE[siteId]; if(!struct) return null
+  const counts=struct.buildings.map(b=>b.floors.reduce((s,f)=>s+f.areas.length,0))
+  return struct.buildings[counts.indexOf(Math.max(...counts))].id
+}
+function hotFlId(siteId,bldId){
+  const bld=DRILLDOWN_STRUCTURE[siteId]?.buildings.find(b=>b.id===bldId); if(!bld) return null
+  return bld.floors.reduce((best,fl)=>fl.areas.length>(bld.floors.find(f=>f.id===best)?.areas.length||0)?fl.id:best,bld.floors[0]?.id)
+}
+function hotArea(siteId,bldId,flId){
+  const bld=DRILLDOWN_STRUCTURE[siteId]?.buildings.find(b=>b.id===bldId); if(!bld) return null
+  return (bld.floors.find(f=>f.id===flId)?.areas||[])[0]?.name||null
+}
 const ANOMALY_SVG=`<span class="anomaly-flag" title="Spike detected – unusually high activity in at least one month"><svg width="14" height="14" viewBox="0 0 18 18" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M9 1C4.589 1 1 4.5889 1 9C1 13.4111 4.589 17 9 17C13.411 17 17 13.4111 17 9C17 4.5889 13.411 1 9 1ZM8.25 5.4312C8.25 5.0171 8.5859 4.6812 9 4.6812C9.4141 4.6812 9.75 5.0171 9.75 5.4312V9.5C9.75 9.9141 9.4141 10.25 9 10.25C8.5859 10.25 8.25 9.9141 8.25 9.5V5.4312ZM9 13.417C8.448 13.417 8 12.968 8 12.417C8 11.866 8.448 11.417 9 11.417C9.552 11.417 10 11.866 10 12.417C10 12.968 9.552 13.417 9 13.417Z" fill="#EF4444"/></svg></span>`
 
 function renderIncidentsTable(){
@@ -798,36 +842,47 @@ function renderIncidentsTable(){
   thead.innerHTML=`<tr><th style="min-width:200px">Site</th><th>Total</th>${TCOLS.map(c=>`<th style="min-width:90px">${c.label}</th>`).join('')}</tr>`
   const rows=as.map(s=>{const cats=siteYearCatTotals(s.id);return{site:s,cats,total:cats.reduce((a,b)=>a+b,0)}})
   const gc=CATS.map((_,ci)=>rows.reduce((s,r)=>s+r.cats[ci],0)), gt=gc.reduce((a,b)=>a+b,0)
-  const numCell=(v,bold=false)=>v?`<td class="num${bold?' bold':''}">${v}</td>`:`<td class="num" style="color:var(--border2)">—</td>`
+  const allSiteAvg=rows.reduce((s,r)=>s+r.total,0)/rows.length
   let html=`<tr class="total-row"><td style="font-weight:600">Total</td>${numCell(gt,true)}${gc.map(v=>numCell(v)).join('')}</tr>`
   rows.forEach(r=>{
     const ex=!!tableExpandState[r.site.id]
-    html+=`<tr class="site-row" data-siteid="${r.site.id}"><td style="white-space:nowrap"><button class="expand-btn${ex?' open':''}" onclick="toggleTableRow('${r.site.id}')" data-expand="1"><span class="tri">▶</span></button><span class="site-name-link">${r.site.name}</span>${isSiteAnomalous(r.site.id)?ANOMALY_SVG:''}</td>${numCell(r.total,true)}${r.cats.map(v=>numCell(v)).join('')}</tr>`
+    const isAnomaly=isSiteAnomalous(r.site.id)
+    // pre-compute hot path for this site
+    const hBld=isAnomaly?hotBldId(r.site.id):null
+    html+=`<tr class="site-row" data-siteid="${r.site.id}"><td style="white-space:nowrap"><button class="expand-btn${ex?' open':''}" onclick="toggleTableRow('${r.site.id}')" data-expand="1"><span class="tri">▶</span></button><span class="site-name-link">${r.site.name}</span>${isAnomaly?ANOMALY_SVG:''}</td>${numCell(r.total,true,allSiteAvg)}${r.cats.map(v=>numCell(v)).join('')}</tr>`
     if(ex){
       const struct=DRILLDOWN_STRUCTURE[r.site.id]
       if(!struct) return
       const bldAreaCounts=struct.buildings.map(b=>b.floors.reduce((s,f)=>s+f.areas.length,0))
       const bldTotalAreas=bldAreaCounts.reduce((a,b)=>a+b,0)
+      const bldSiblingAvg=r.total/struct.buildings.length
       struct.buildings.forEach((bld,bi)=>{
         const bldFrac=bldAreaCounts[bi]/bldTotalAreas
         const bldTotal=Math.round(r.total*bldFrac)
         const bldDist=bld.floors.flatMap(f=>f.areas).reduce((acc,a)=>a.dist.map((d,i)=>acc[i]+d),new Array(CATS.length).fill(0))
         const bldCats=distToVals(bldDist,bldTotal)
         const bldKey=r.site.id+'|'+bld.id, bldEx=!!tableBldState[bldKey]
-        html+=`<tr class="subrow"><td><button class="expand-btn${bldEx?' open':''}" onclick="toggleTableBld('${r.site.id}','${bld.id}')"><span class="tri">▶</span>${bld.name}</button></td>${numCell(bldTotal)}${bldCats.map(v=>numCell(v)).join('')}</tr>`
+        const bldFlag=isAnomaly&&bld.id===hBld?ANOMALY_SVG:''
+        const hFl=bldFlag?hotFlId(r.site.id,bld.id):null
+        html+=`<tr class="subrow"><td><button class="expand-btn${bldEx?' open':''}" onclick="toggleTableBld('${r.site.id}','${bld.id}')"><span class="tri">▶</span>${bld.name}</button>${bldFlag}</td>${numCell(bldTotal,false,bldSiblingAvg)}${bldCats.map(v=>numCell(v)).join('')}</tr>`
         if(bldEx){
           const bldAreaTotal=bld.floors.reduce((s,f)=>s+f.areas.length,0)
+          const flSiblingAvg=bldTotal/bld.floors.length
           bld.floors.forEach(fl=>{
             const flTotal=Math.round(bldTotal*(fl.areas.length/bldAreaTotal))
             const flDist=fl.areas.reduce((acc,a)=>a.dist.map((d,i)=>acc[i]+d),new Array(CATS.length).fill(0))
             const flCats=distToVals(flDist,flTotal)
             const flKey=r.site.id+'|'+bld.id+'|'+fl.id, flEx=!!tableFloorState[flKey]
-            html+=`<tr class="subrow subrow-l2"><td><button class="expand-btn${flEx?' open':''}" onclick="toggleTableFloor('${r.site.id}','${bld.id}','${fl.id}')"><span class="tri">▶</span>${fl.name}</button></td>${numCell(flTotal)}${flCats.map(v=>numCell(v)).join('')}</tr>`
+            const flFlag=bldFlag&&fl.id===hFl?ANOMALY_SVG:''
+            const hArea=flFlag?hotArea(r.site.id,bld.id,fl.id):null
+            html+=`<tr class="subrow subrow-l2"><td><button class="expand-btn${flEx?' open':''}" onclick="toggleTableFloor('${r.site.id}','${bld.id}','${fl.id}')"><span class="tri">▶</span>${fl.name}</button>${flFlag}</td>${numCell(flTotal,false,flSiblingAvg)}${flCats.map(v=>numCell(v)).join('')}</tr>`
             if(flEx){
+              const areaSiblingAvg=flTotal/fl.areas.length
               fl.areas.forEach(area=>{
                 const aTotal=Math.round(flTotal/fl.areas.length)
                 const aCats=distToVals(area.dist,aTotal)
-                html+=`<tr class="subrow subrow-l3"><td>${area.name}</td>${numCell(aTotal)}${aCats.map(v=>numCell(v)).join('')}</tr>`
+                const aFlag=flFlag&&area.name===hArea?ANOMALY_SVG:''
+                html+=`<tr class="subrow subrow-l3"><td>${area.name}${aFlag}</td>${numCell(aTotal,false,areaSiblingAvg)}${aCats.map(v=>numCell(v)).join('')}</tr>`
               })
             }
           })
@@ -1046,6 +1101,47 @@ function posAreaTip(e){const tt=document.getElementById('area-tooltip');let x=e.
 document.addEventListener('mousemove',e=>{if(document.getElementById('area-tooltip').style.display==='block')posAreaTip(e)})
 
 // ─────────────────────────────────────────────
+// KPI TILES
+// ─────────────────────────────────────────────
+function renderKPIs(){
+  const el=document.getElementById('kpis'); if(!el) return
+  const totals=SITES.map(s=>({site:s,total:siteAnnualTotal(s.id)}))
+  const grand=totals.reduce((s,d)=>s+d.total,0)
+  const topSite=totals.reduce((a,b)=>a.total>=b.total?a:b)
+  const critical=SITES.reduce((sum,s)=>sum+DATA[s.id].reduce((s2,mo)=>s2+(mo[0]||0),0),0)
+  const critPct=grand>0?Math.round(critical/grand*100):0
+  const monthTotals=MO_ORDER.map((mi,fi)=>({label:MO_LABELS[fi],total:SITES.reduce((sum,s)=>sum+DATA[s.id][mi].reduce((a,v)=>a+v,0),0)}))
+  const peakMonth=monthTotals.reduce((a,b)=>a.total>=b.total?a:b)
+  const activeSiteCount=SITES.length
+  el.innerHTML=`
+    <div class="kpi" style="--kpi-top:#C0385A">
+      <div class="kpi-lbl">Total Incidents</div>
+      <div class="kpi-val">${grand}</div>
+      <div class="kpi-sub">Full fiscal year</div>
+    </div>
+    <div class="kpi" style="--kpi-top:#C0385A">
+      <div class="kpi-lbl">Most Incidents</div>
+      <div class="kpi-val">${topSite.total}</div>
+      <div class="kpi-sub">${topSite.site.name}</div>
+    </div>
+    <div class="kpi" style="--kpi-top:#F4845F">
+      <div class="kpi-lbl">Critical (Duress)</div>
+      <div class="kpi-val" style="color:#C0385A">${critical}</div>
+      <div class="kpi-sub">Full fiscal year</div>
+    </div>
+    <div class="kpi" style="--kpi-top:#2563EB">
+      <div class="kpi-lbl">% Critical</div>
+      <div class="kpi-val">${critPct}%</div>
+      <div class="kpi-sub">of all incidents</div>
+    </div>
+    <div class="kpi" style="--kpi-top:#94A3B8">
+      <div class="kpi-lbl">Peak Month</div>
+      <div class="kpi-val sm">${peakMonth.label}</div>
+      <div class="kpi-sub">${peakMonth.total} incidents</div>
+    </div>`
+}
+
+// ─────────────────────────────────────────────
 // CLOSE ADD-SITE PANEL ON OUTSIDE CLICK
 // ─────────────────────────────────────────────
 document.addEventListener('click',e=>{
@@ -1079,6 +1175,7 @@ document.addEventListener('click', function(e){
 // ─────────────────────────────────────────────
 // INIT
 // ─────────────────────────────────────────────
+renderKPIs()
 renderLocChips()
 renderIncTypeFilters()
 renderTrendChart()
@@ -1100,4 +1197,4 @@ renderIncidentsTable()
 <!-- bust 1773281659 -->
 <!-- bust 1773281879 -->
 <!-- bust 1773282057 -->
-<!-- bust 1773400101 -->
+<!-- bust 1773500000 -->
