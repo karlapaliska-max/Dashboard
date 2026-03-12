@@ -729,7 +729,7 @@ function activeIdx(){ return CATS.map((c,i)=>catActive[c.id]?i:-1).filter(i=>i>=
 function activeSites(){ return SITES.filter(s=>siteActive[s.id]) }
 function filteredSum(vals){ return activeIdx().reduce((s,i)=>s+(vals[i]||0),0) }
 function yearData(id){ return DATA[id].reduce((a,mo)=>{mo.forEach((v,i)=>a[i]=(a[i]||0)+v);return a},new Array(CATS.length).fill(0)) }
-function isSiteAnomalous(siteId){ const t=DATA[siteId].map(mo=>mo.reduce((s,v)=>s+(v||0),0)); const avg=t.reduce((s,v)=>s+v,0)/t.length; return Math.max(...t)>avg*1.55 }
+function isSiteAnomalous(siteId){ const t=DATA[siteId].map(mo=>mo.reduce((s,v)=>s+(v||0),0)); const avg=t.reduce((s,v)=>s+v,0)/t.length; return Math.max(...t)>avg*1.33 }
 const ANOMALY_SVG=`<span class="anomaly-flag" title="Anomaly detected – unusually high incident activity in at least one month"><svg width="14" height="14" viewBox="0 0 16 16"><path d="M8 1.5L15 14H1L8 1.5Z" fill="#EF4444"/><rect x="7.2" y="5.5" width="1.6" height="4.5" rx=".8" fill="#fff"/><circle cx="8" cy="11.8" r=".9" fill="#fff"/></svg></span>`
 
 function distToVals(dist, total){
@@ -1563,3 +1563,4 @@ renderTimeline(); renderTimelineTable(); updateKPIs(); renderIncidentsTable()
 <!-- bust 1773281659 -->
 <!-- bust 1773281879 -->
 <!-- bust 1773281969 -->
+<!-- bust 1773282057 -->
