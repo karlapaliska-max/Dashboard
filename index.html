@@ -121,7 +121,7 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--t1);font-si
 @keyframes fadeUp{to{opacity:1}}
 .site-row:hover{background:var(--bg)}
 .site-row.highlighted{background:var(--acc-l);outline:2px solid var(--acc-m)}
-.site-row-label{width:160px;flex-shrink:0;font-size:14px;font-weight:500;color:var(--t2);text-align:right;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.site-row-label{width:160px;flex-shrink:0;font-size:14px;font-weight:500;color:var(--t2);text-align:right;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;display:flex;align-items:center;justify-content:flex-end;gap:8px}
 .site-row.highlighted .site-row-label{color:var(--acc);font-weight:600}
 .site-row-bar{flex:1;height:22px;background:var(--border);border-radius:3px;overflow:hidden;display:flex;position:relative}
 .site-row.highlighted .site-row-bar{box-shadow:0 0 0 2px var(--acc)}
@@ -130,7 +130,7 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--t1);font-si
 .empty-state{padding:48px;text-align:center;color:var(--t3)}
 .empty-state strong{display:block;font-size:14px;color:var(--t2);margin-bottom:4px}
 .anomaly-flag{display:inline-flex;align-items:center;vertical-align:middle;margin-left:5px;margin-right:0;flex-shrink:0;opacity:.9}
-.site-row-label .anomaly-flag{margin-left:0;margin-right:5px}
+.site-row-label .anomaly-flag{margin-left:0;margin-right:0}
 .spike-val{color:#dc2626;font-weight:700}
 .spike-avg{color:#dc2626;font-size:11px;margin-left:4px;font-weight:500}
 .area-row .spike-val{font-size:12px}
@@ -396,7 +396,7 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--t1);font-si
   <!-- ══ MAIN ══ -->
   <div class="main">
     <div class="topbar">
-      <div class="topbar-left"><small>Analytics</small><h1>Incidents <span style="font-size:11px;font-weight:400;color:var(--t3);vertical-align:middle">v1.8</span></h1></div>
+      <div class="topbar-left"><small>Analytics</small><h1>Incidents <span style="font-size:11px;font-weight:400;color:var(--t3);vertical-align:middle">v1.9</span></h1></div>
       <div class="topbar-right">
         <button class="btn">↓ PNG</button>
         <button class="btn">↓ CSV</button>
@@ -1717,7 +1717,7 @@ renderTimeline(); renderTimelineTable(); updateKPIs(); renderIncidentsTable()
 </script>
 </body>
 </html>
-<!-- bust 1741774000 -->
+<!-- bust 1741774600 -->
 <!-- Wed Mar 11 12:56:49 CET 2026 -->
 <!-- cache-bust 1773258729 -->
 <!-- bust 1773281659 -->
