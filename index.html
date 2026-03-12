@@ -133,6 +133,8 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--t1);font-si
 .site-row-label .anomaly-flag{margin-left:0;margin-right:5px}
 .spike-val{color:#dc2626;font-weight:700}
 .spike-avg{color:#dc2626;font-size:11px;margin-left:4px;font-weight:500}
+.area-row .spike-val{font-size:12px}
+.area-row .spike-avg{font-size:11px}
 .view-link{background:none;border:none;padding:0;margin-left:6px;color:var(--acc);font-size:12px;font-weight:500;text-decoration:underline;cursor:pointer;vertical-align:middle}
 .spike-view{flex-shrink:0;margin-left:0;margin-right:4px}
 .area-spike{background:#fff5f5;border-left:2px solid #dc2626}
@@ -394,7 +396,7 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--t1);font-si
   <!-- ══ MAIN ══ -->
   <div class="main">
     <div class="topbar">
-      <div class="topbar-left"><small>Analytics</small><h1>Incidents <span style="font-size:11px;font-weight:400;color:var(--t3);vertical-align:middle">v1.6</span></h1></div>
+      <div class="topbar-left"><small>Analytics</small><h1>Incidents <span style="font-size:11px;font-weight:400;color:var(--t3);vertical-align:middle">v1.7</span></h1></div>
       <div class="topbar-right">
         <button class="btn">↓ PNG</button>
         <button class="btn">↓ CSV</button>
@@ -646,8 +648,8 @@ const DRILLDOWN_STRUCTURE = {
     buildings:[
       { id:'bldA', name:'Building A – Cardiology', icon:'❤️',
         floors:[
-          { id:'f1', name:'Floor 1 – Cath Lab',
-            areas:[{ name:'Procedure Rm 1', dist:[.35,.15,.08,.20,.04,.10,.08] },{ name:'Recovery Bay', dist:[.28,.18,.10,.16,.05,.13,.10] },{ name:'Waiting',dist:[.18,.25,.14,.12,.06,.14,.11] }]},
+          { id:'f1', name:'Floor 1 – Emergency',
+            areas:[{ name:'Waiting Room', dist:[.52,.12,.07,.12,.04,.08,.05] },{ name:'Triage', dist:[.20,.20,.13,.15,.06,.14,.12] },{ name:'Exam Bay', dist:[.16,.22,.14,.14,.07,.15,.12] }]},
           { id:'f2', name:'Floor 2 – Step Down',
             areas:[{ name:'Patient Rooms', dist:[.32,.16,.10,.18,.05,.11,.08] },{ name:'Nurse Station', dist:[.22,.20,.12,.14,.06,.15,.11] }]},
           { id:'f3', name:'Floor 3 – Echo Suite',
@@ -783,16 +785,18 @@ function findTimelineSpike(siteId){
   const best=rows.reduce((a,b)=>a.total>=b.total?a:b)
   return {label:best.label,pct:Math.round((best.total-avg)/avg*100)}
 }
-// For bar chart: find which active site has the highest spike ratio in a given month
-function findSpikeSiteForPeriod(monthIdx, siteObjs){
-  if(!siteObjs.length) return null
-  if(monthIdx===-1) return CRITICAL_SITE_ID
-  return siteObjs.reduce((bestSite, s)=>{
-    const t=DATA[s.id][monthIdx].reduce((a,b)=>a+b,0)
-    const ratio=t/siteMonthlyAvg(s.id)
-    const bt=DATA[bestSite.id][monthIdx].reduce((a,b)=>a+b,0)
-    return ratio>bt/siteMonthlyAvg(bestSite.id)?s:bestSite
-  }, siteObjs[0]).id
+// Find the single globally most anomalous (monthIdx, siteId) pair across all active sites
+function findGlobalSpike(siteObjs){
+  let bestSiteId=null, bestMonthIdx=null, bestRatio=0
+  siteObjs.forEach(s=>{
+    const avg=siteMonthlyAvg(s.id); if(!avg) return
+    DATA[s.id].forEach((mo,mi)=>{
+      const t=mo.reduce((a,b)=>a+b,0)
+      const ratio=t/avg
+      if(ratio>bestRatio){ bestRatio=ratio; bestSiteId=s.id; bestMonthIdx=mi }
+    })
+  })
+  return bestSiteId?{siteId:bestSiteId,monthIdx:bestMonthIdx}:null
 }
 // Spike path using a specific month's total vals (for drawer)
 function findDrawerSpike(siteId, vals){
@@ -811,7 +815,7 @@ function findDrawerSpike(siteId, vals){
       CATS.forEach((_,ci)=>{
         const catVals=areaCatVals.map(v=>v[ci])
         const avg=catVals.reduce((a,b)=>a+b,0)/catVals.length
-        if(avg===0) return
+        if(avg<2) return  // ignore degenerate near-zero cases
         const maxVal=Math.max(...catVals)
         const ratio=maxVal/avg
         if(ratio>bestRatio){
@@ -1496,15 +1500,15 @@ function renderBysite(){
     ?MONTHS.map((m,mi)=>({label:m,monthIdx:mi,data:as.map(s=>({site:s,vals:DATA[s.id][mi]}))}))
     :[{label:'Feb 2025 – Feb 2026',monthIdx:-1,data:as.map(s=>({site:s,vals:yearData(s.id)}))}]
 
+  const globalSpike=findGlobalSpike(as)
   inner.innerHTML=periods.map(period=>{
     const pTotal=period.data.reduce((s,d)=>s+filteredSum(d.vals),0)
-    const spikeSiteId=findSpikeSiteForPeriod(period.monthIdx, period.data.map(d=>d.site))
     const rows=period.data.map((d,ri)=>{
       const tot=filteredSum(d.vals)
       const segs=ac.map(cat=>{ const ci=CATS.indexOf(cat),v=d.vals[ci]||0; return v?`<div class="bar-seg" style="width:${(v/max*100).toFixed(2)}%;background:${cat.color}"></div>`:'' }).join('')
       const vj=JSON.stringify(d.vals).replace(/"/g,'&quot;')
       const isHL=drawerState&&drawerState.siteId===d.site.id&&drawerState.monthIdx===period.monthIdx
-      const isSpike=d.site.id===spikeSiteId
+      const isSpike=globalSpike&&d.site.id===globalSpike.siteId&&period.monthIdx===globalSpike.monthIdx
       return `
         <div class="site-row${isHL?' highlighted':''}" style="animation-delay:${ri*30}ms"
              data-site="${d.site.id}" data-month="${period.monthIdx}"
@@ -1714,7 +1718,7 @@ renderTimeline(); renderTimelineTable(); updateKPIs(); renderIncidentsTable()
 </script>
 </body>
 </html>
-<!-- bust 1741772600 -->
+<!-- bust 1741773300 -->
 <!-- Wed Mar 11 12:56:49 CET 2026 -->
 <!-- cache-bust 1773258729 -->
 <!-- bust 1773281659 -->
