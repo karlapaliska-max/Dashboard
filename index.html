@@ -138,6 +138,8 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--t1);font-si
 .spike-avg{color:#dc2626;font-size:11px;margin-left:4px;font-weight:500}
 .area-row .spike-val{font-size:12px}
 .area-row .spike-avg{font-size:11px}
+.spike-dot{color:var(--t3);margin:0 2px}
+.spike-chip{display:inline-block;background:#fee2e2;color:#b91c1c;font-size:11px;font-weight:500;padding:1px 7px;border-radius:20px;margin-left:4px;vertical-align:middle;white-space:nowrap}
 .view-link{background:none;border:none;padding:0;margin-left:6px;color:var(--acc);font-size:12px;font-weight:500;text-decoration:underline;cursor:pointer;vertical-align:middle}
 .spike-view{flex-shrink:0;margin-left:0;margin-right:4px}
 .area-spike{background:#fff5f5;border-left:2px solid #dc2626}
@@ -399,7 +401,7 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--t1);font-si
   <!-- ══ MAIN ══ -->
   <div class="main">
     <div class="topbar">
-      <div class="topbar-left"><small>Analytics</small><h1>Incidents <span style="font-size:11px;font-weight:400;color:var(--t3);vertical-align:middle">v2.5</span></h1></div>
+      <div class="topbar-left"><small>Analytics</small><h1>Incidents <span style="font-size:11px;font-weight:400;color:var(--t3);vertical-align:middle">v2.6</span></h1></div>
       <div class="topbar-right">
         <button class="btn">↓ PNG</button>
         <button class="btn">↓ CSV</button>
@@ -538,7 +540,7 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--t1);font-si
 // DATA MODEL
 // ─────────────────────────────────────────────
 const CATS = [
-  { id:'duress',    label:'Duress – by security',     color:'#C0385A' },
+  { id:'duress',    label:'Duress by security',       color:'#C0385A' },
   { id:'nonduress', label:'Non-duress situation',     color:'#F4845F' },
   { id:'itest_l',   label:'Intentional test (light)', color:'#38BDF8' },
   { id:'itest_d',   label:'Intentional test',         color:'#2563EB' },
@@ -1160,7 +1162,7 @@ function renderDrawerBody(){
           }).join('')
           const avJson = JSON.stringify(aVals).replace(/"/g,'&quot;')
           const areaNameHtml = isAreaSpike
-            ? `${area.name} — <span class="spike-val">${sp.maxVal} ${CATS[sp.catIdx].label} incidents</span><span class="spike-avg">(+${sp.pct}% vs avg)</span>`
+            ? `${area.name} <span class="spike-dot">•</span> <span class="spike-val">${sp.maxVal} ${CATS[sp.catIdx].label} incidents</span> <span class="spike-chip">+${sp.pct}% vs avg</span>`
             : area.name
           areasHtml += `
             <div class="area-row${isAreaSpike?' area-spike':''}"
