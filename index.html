@@ -402,7 +402,7 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--t1);font-si
   <!-- ══ MAIN ══ -->
   <div class="main">
     <div class="topbar">
-      <div class="topbar-left"><small>Analytics</small><h1>Incidents <span style="font-size:11px;font-weight:400;color:var(--t3);vertical-align:middle">v2.19</span></h1></div>
+      <div class="topbar-left"><small>Analytics</small><h1>Incidents <span style="font-size:11px;font-weight:400;color:var(--t3);vertical-align:middle">v2.20</span></h1></div>
       <div class="topbar-right">
         <button class="btn">↓ PNG</button>
         <button class="btn">↓ CSV</button>
@@ -1585,7 +1585,7 @@ function renderIncidentsTable(){
   rows.forEach(r=>{
     const ex=!!tableExpandState[r.site.id]
     const isAnomaly=isSiteAnomalous(r.site.id)
-    const siteExtras=isAnomaly?`${ANOMALY_SVG}<button class="view-link" onclick="event.stopPropagation();event.preventDefault();viewSpike('${r.site.id}')">View</button>`:''
+    const siteExtras=isAnomaly?`${ANOMALY_SVG}<button class="view-link" onclick="event.stopPropagation();event.preventDefault();viewSpike('${r.site.id}')">View issue</button>`:''
     html+=`<tr><td><button class="expand-btn${ex?' open':''}" onclick="toggleTableRow('${r.site.id}')"><span class="tri">${CHEVRON_RIGHT}</span>${r.site.name}</button>${siteExtras}</td>${numCell(r.total,true)}${r.cats.map(v=>numCell(v)).join('')}</tr>`
     if(ex){
       const struct=DRILLDOWN_STRUCTURE[r.site.id]
@@ -1687,7 +1687,7 @@ function renderTimelineTable(){
     const isAnomaly=isSiteAnomalous(r.site.id)
     const subRows=tlTableGran==='week'?tlWeekRows(r.site.id):tlMonthRows(r.site.id)
     const tlSpike=isAnomaly?findTimelineSpike(r.site.id):null
-    const siteExtras=isAnomaly?`${ANOMALY_SVG}<button class="view-link" onclick="event.stopPropagation();viewSpikeTimeline('${r.site.id}')">View</button>`:''
+    const siteExtras=isAnomaly?`${ANOMALY_SVG}<button class="view-link" onclick="event.stopPropagation();viewSpikeTimeline('${r.site.id}')">View issue</button>`:''
     html+=`<tr><td><button class="expand-btn${ex?' open':''}" onclick="toggleTLTableRow('${r.site.id}')"><span class="tri">${CHEVRON_RIGHT}</span>${r.site.name}</button>${siteExtras}</td>${numCell(r.total,true)}${r.cats.map(v=>numCell(v)).join('')}</tr>`
     if(ex) subRows.forEach(sr=>{
       if(!sr.total) return
