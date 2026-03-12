@@ -790,7 +790,7 @@ function distToVals(dist,total){const sum=dist.reduce((a,b)=>a+b,0);return dist.
 function siteYearCatTotals(id){return CATS.map((_,ci)=>DATA[id].reduce((s,mo)=>s+(mo[ci]||0),0))}
 function siteMonthlyAvg(siteId){ const t=DATA[siteId].map(mo=>mo.reduce((s,v)=>s+(v||0),0)); return t.reduce((s,v)=>s+v,0)/t.length }
 function isSiteAnomalous(siteId){ const t=DATA[siteId].map(mo=>mo.reduce((s,v)=>s+(v||0),0)); return t.some(v=>v>siteMonthlyAvg(siteId)*1.2) }
-const ANOMALY_SVG=`<span class="anomaly-flag" title="Spike detected – unusually high activity in at least one month"><svg width="14" height="14" viewBox="0 0 16 16"><path d="M8 1.5L15 14H1L8 1.5Z" fill="#EF4444"/><rect x="7.2" y="5.5" width="1.6" height="4.5" rx=".8" fill="#fff"/><circle cx="8" cy="11.8" r=".9" fill="#fff"/></svg></span>`
+const ANOMALY_SVG=`<span class="anomaly-flag" title="Spike detected – unusually high activity in at least one month"><svg width="14" height="14" viewBox="0 0 18 18" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M9 1C4.589 1 1 4.5889 1 9C1 13.4111 4.589 17 9 17C13.411 17 17 13.4111 17 9C17 4.5889 13.411 1 9 1ZM8.25 5.4312C8.25 5.0171 8.5859 4.6812 9 4.6812C9.4141 4.6812 9.75 5.0171 9.75 5.4312V9.5C9.75 9.9141 9.4141 10.25 9 10.25C8.5859 10.25 8.25 9.9141 8.25 9.5V5.4312ZM9 13.417C8.448 13.417 8 12.968 8 12.417C8 11.866 8.448 11.417 9 11.417C9.552 11.417 10 11.866 10 12.417C10 12.968 9.552 13.417 9 13.417Z" fill="#EF4444"/></svg></span>`
 
 function renderIncidentsTable(){
   const as=SITES, thead=document.getElementById('inc-thead'), tbody=document.getElementById('inc-tbody')
@@ -1100,4 +1100,4 @@ renderIncidentsTable()
 <!-- bust 1773281659 -->
 <!-- bust 1773281879 -->
 <!-- bust 1773282057 -->
-<!-- bust 1773400001 -->
+<!-- bust 1773400101 -->
