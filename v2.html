@@ -125,10 +125,12 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--t1);font-si
 .inc-table tr.subrow-l3 td:first-child{padding-left:70px;color:var(--t3);font-size:11px}
 .inc-table td.num{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--t2)}
 .inc-table td.num.bold{font-weight:600;color:var(--t1);font-size:12px}
-.site-name-link{color:#3B82F6;font-weight:500;margin-left:6px}
+.site-name-link{color:var(--t1);font-weight:500;margin-left:6px}
 .anomaly-flag{display:inline-flex;align-items:center;vertical-align:middle;margin-left:5px;flex-shrink:0;opacity:.9}
+.view-link{color:var(--acc);text-decoration:underline;cursor:pointer;font-size:12px;font-weight:500;border:none;background:none;font-family:inherit;padding:0;margin-left:6px;white-space:nowrap}
+.view-link:hover{color:#1d4ed8}
 .inc-table tr.site-row{cursor:pointer}
-.inc-table tr.site-row:hover td{background:color-mix(in srgb,#3B82F6 6%,var(--surface) 94%)}
+.inc-table tr.site-row:hover td{background:color-mix(in srgb,var(--acc) 5%,var(--surface) 95%)}
 
 /* ══ SPIKE HIGHLIGHT ══ */
 .spike-val{color:#EF4444;font-weight:700}
@@ -820,39 +822,67 @@ const CRITICAL_SITE_ID=(()=>SITES.reduce((bestId,s)=>{
   return ratio>Math.max(...bt)/bavg?s.id:bestId
 },SITES[0].id))()
 function isSiteAnomalous(siteId){ return siteId===CRITICAL_SITE_ID }
-// Hierarchy hot-path helpers: find which building/floor/area has the most incidents
-function hotBldId(siteId){
+// Compute the hot path + spike level for a site
+// Returns {bldId, bldTotal, bldAvg, flId, flTotal, flAvg, areaName, spikeLevel}
+// spikeLevel = 'building' | 'floor' — whichever has the higher ratio vs siblings
+function findSpikePath(siteId){
   const struct=DRILLDOWN_STRUCTURE[siteId]; if(!struct) return null
-  const counts=struct.buildings.map(b=>b.floors.reduce((s,f)=>s+f.areas.length,0))
-  return struct.buildings[counts.indexOf(Math.max(...counts))].id
+  const siteTotal=siteAnnualTotal(siteId)
+  // Building level
+  const bldAreaCounts=struct.buildings.map(b=>b.floors.reduce((s,f)=>s+f.areas.length,0))
+  const bldTotalAreas=bldAreaCounts.reduce((a,b)=>a+b,0)
+  const bldTotals=struct.buildings.map((_,bi)=>Math.round(siteTotal*bldAreaCounts[bi]/bldTotalAreas))
+  const bldAvg=siteTotal/struct.buildings.length
+  const hotBi=bldTotals.indexOf(Math.max(...bldTotals))
+  const hotBld=struct.buildings[hotBi]
+  const hotBldTotal=bldTotals[hotBi]
+  const bldRatio=hotBldTotal/bldAvg
+  // Floor level within hot building
+  const bldAreaTotal=hotBld.floors.reduce((s,f)=>s+f.areas.length,0)
+  const flTotals=hotBld.floors.map(fl=>Math.round(hotBldTotal*(fl.areas.length/bldAreaTotal)))
+  const flAvg=hotBldTotal/hotBld.floors.length
+  const hotFi=flTotals.indexOf(Math.max(...flTotals))
+  const hotFl=hotBld.floors[hotFi]
+  const hotFlTotal=flTotals[hotFi]
+  const flRatio=hotFlTotal/flAvg
+  // Spike level = whichever ratio is higher
+  const spikeLevel=flRatio>=bldRatio?'floor':'building'
+  return {
+    bldId:hotBld.id, bldTotal:hotBldTotal, bldAvg:Math.round(bldAvg),
+    flId:hotFl.id, flTotal:hotFlTotal, flAvg:Math.round(flAvg),
+    areaName:hotFl.areas[0]?.name||null, spikeLevel
+  }
 }
-function hotFlId(siteId,bldId){
-  const bld=DRILLDOWN_STRUCTURE[siteId]?.buildings.find(b=>b.id===bldId); if(!bld) return null
-  return bld.floors.reduce((best,fl)=>fl.areas.length>(bld.floors.find(f=>f.id===best)?.areas.length||0)?fl.id:best,bld.floors[0]?.id)
-}
-function hotArea(siteId,bldId,flId){
-  const bld=DRILLDOWN_STRUCTURE[siteId]?.buildings.find(b=>b.id===bldId); if(!bld) return null
-  return (bld.floors.find(f=>f.id===flId)?.areas||[])[0]?.name||null
+// Auto-expand to spike level and scroll
+function viewSpike(siteId){
+  const p=findSpikePath(siteId); if(!p) return
+  tableExpandState[siteId]=true
+  tableBldState[siteId+'|'+p.bldId]=true
+  if(p.spikeLevel==='floor') tableFloorState[siteId+'|'+p.bldId+'|'+p.flId]=true
+  renderIncidentsTable()
+  setTimeout(()=>{
+    const el=document.querySelector('.spike-val')
+    if(el) el.closest('tr')?.scrollIntoView({behavior:'smooth',block:'center'})
+  },80)
 }
 const ANOMALY_SVG=`<span class="anomaly-flag" title="Spike detected – unusually high activity in at least one month"><svg width="14" height="14" viewBox="0 0 18 18" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M9 1C4.589 1 1 4.5889 1 9C1 13.4111 4.589 17 9 17C13.411 17 17 13.4111 17 9C17 4.5889 13.411 1 9 1ZM8.25 5.4312C8.25 5.0171 8.5859 4.6812 9 4.6812C9.4141 4.6812 9.75 5.0171 9.75 5.4312V9.5C9.75 9.9141 9.4141 10.25 9 10.25C8.5859 10.25 8.25 9.9141 8.25 9.5V5.4312ZM9 13.417C8.448 13.417 8 12.968 8 12.417C8 11.866 8.448 11.417 9 11.417C9.552 11.417 10 11.866 10 12.417C10 12.968 9.552 13.417 9 13.417Z" fill="#EF4444"/></svg></span>`
 
 function renderIncidentsTable(){
-  const as=SITES, thead=document.getElementById('inc-thead'), tbody=document.getElementById('inc-tbody')
+  const thead=document.getElementById('inc-thead'), tbody=document.getElementById('inc-tbody')
   if(!thead||!tbody) return
   thead.innerHTML=`<tr><th style="min-width:200px">Site</th><th>Total</th>${TCOLS.map(c=>`<th style="min-width:90px">${c.label}</th>`).join('')}</tr>`
-  const rows=as.map(s=>{const cats=siteYearCatTotals(s.id);return{site:s,cats,total:cats.reduce((a,b)=>a+b,0)}})
+  const rows=SITES.map(s=>{const cats=siteYearCatTotals(s.id);return{site:s,cats,total:cats.reduce((a,b)=>a+b,0)}})
   const gc=CATS.map((_,ci)=>rows.reduce((s,r)=>s+r.cats[ci],0)), gt=gc.reduce((a,b)=>a+b,0)
-  const allSiteAvg=rows.reduce((s,r)=>s+r.total,0)/rows.length
   let html=`<tr class="total-row"><td style="font-weight:600">Total</td>${numCell(gt,true)}${gc.map(v=>numCell(v)).join('')}</tr>`
   rows.forEach(r=>{
     const ex=!!tableExpandState[r.site.id]
     const isAnomaly=isSiteAnomalous(r.site.id)
-    // pre-compute hot path for this site
-    const hBld=isAnomaly?hotBldId(r.site.id):null
-    html+=`<tr class="site-row" data-siteid="${r.site.id}"><td style="white-space:nowrap"><button class="expand-btn${ex?' open':''}" onclick="toggleTableRow('${r.site.id}')" data-expand="1"><span class="tri">▶</span></button><span class="site-name-link">${r.site.name}</span>${isAnomaly?ANOMALY_SVG:''}</td>${numCell(r.total,true,allSiteAvg)}${r.cats.map(v=>numCell(v)).join('')}</tr>`
+    const sp=isAnomaly?findSpikePath(r.site.id):null
+    // Site row: name stays black, only warning icon + View link — total NOT highlighted
+    const siteExtras=isAnomaly?`${ANOMALY_SVG}<button class="view-link" onclick="event.stopPropagation();viewSpike('${r.site.id}')">View</button>`:''
+    html+=`<tr class="site-row" data-siteid="${r.site.id}"><td style="white-space:nowrap"><button class="expand-btn${ex?' open':''}" onclick="toggleTableRow('${r.site.id}')" data-expand="1"><span class="tri">▶</span></button><span class="site-name-link">${r.site.name}</span>${siteExtras}</td>${numCell(r.total,true)}${r.cats.map(v=>numCell(v)).join('')}</tr>`
     if(ex){
-      const struct=DRILLDOWN_STRUCTURE[r.site.id]
-      if(!struct) return
+      const struct=DRILLDOWN_STRUCTURE[r.site.id]; if(!struct) return
       const bldAreaCounts=struct.buildings.map(b=>b.floors.reduce((s,f)=>s+f.areas.length,0))
       const bldTotalAreas=bldAreaCounts.reduce((a,b)=>a+b,0)
       const bldSiblingAvg=r.total/struct.buildings.length
@@ -862,27 +892,28 @@ function renderIncidentsTable(){
         const bldDist=bld.floors.flatMap(f=>f.areas).reduce((acc,a)=>a.dist.map((d,i)=>acc[i]+d),new Array(CATS.length).fill(0))
         const bldCats=distToVals(bldDist,bldTotal)
         const bldKey=r.site.id+'|'+bld.id, bldEx=!!tableBldState[bldKey]
-        const bldFlag=isAnomaly&&bld.id===hBld?ANOMALY_SVG:''
-        const hFl=bldFlag?hotFlId(r.site.id,bld.id):null
-        html+=`<tr class="subrow"><td><button class="expand-btn${bldEx?' open':''}" onclick="toggleTableBld('${r.site.id}','${bld.id}')"><span class="tri">▶</span>${bld.name}</button>${bldFlag}</td>${numCell(bldTotal,false,bldSiblingAvg)}${bldCats.map(v=>numCell(v)).join('')}</tr>`
+        const isHotBld=sp&&bld.id===sp.bldId
+        // Building: warning icon if hot, bold red only if spike IS at building level
+        const bldIcon=isHotBld?ANOMALY_SVG:''
+        const bldTotalCell=isHotBld&&sp.spikeLevel==='building'?numCell(bldTotal,false,sp.bldAvg):numCell(bldTotal)
+        html+=`<tr class="subrow"><td><button class="expand-btn${bldEx?' open':''}" onclick="toggleTableBld('${r.site.id}','${bld.id}')"><span class="tri">▶</span>${bld.name}</button>${bldIcon}</td>${bldTotalCell}${bldCats.map(v=>numCell(v)).join('')}</tr>`
         if(bldEx){
           const bldAreaTotal=bld.floors.reduce((s,f)=>s+f.areas.length,0)
-          const flSiblingAvg=bldTotal/bld.floors.length
           bld.floors.forEach(fl=>{
             const flTotal=Math.round(bldTotal*(fl.areas.length/bldAreaTotal))
             const flDist=fl.areas.reduce((acc,a)=>a.dist.map((d,i)=>acc[i]+d),new Array(CATS.length).fill(0))
             const flCats=distToVals(flDist,flTotal)
             const flKey=r.site.id+'|'+bld.id+'|'+fl.id, flEx=!!tableFloorState[flKey]
-            const flFlag=bldFlag&&fl.id===hFl?ANOMALY_SVG:''
-            const hArea=flFlag?hotArea(r.site.id,bld.id,fl.id):null
-            html+=`<tr class="subrow subrow-l2"><td><button class="expand-btn${flEx?' open':''}" onclick="toggleTableFloor('${r.site.id}','${bld.id}','${fl.id}')"><span class="tri">▶</span>${fl.name}</button>${flFlag}</td>${numCell(flTotal,false,flSiblingAvg)}${flCats.map(v=>numCell(v)).join('')}</tr>`
+            const isHotFl=isHotBld&&fl.id===sp.flId
+            // Floor: warning icon if hot, bold red only if spike IS at floor level
+            const flIcon=isHotFl?ANOMALY_SVG:''
+            const flTotalCell=isHotFl&&sp.spikeLevel==='floor'?numCell(flTotal,false,sp.flAvg):numCell(flTotal)
+            html+=`<tr class="subrow subrow-l2"><td><button class="expand-btn${flEx?' open':''}" onclick="toggleTableFloor('${r.site.id}','${bld.id}','${fl.id}')"><span class="tri">▶</span>${fl.name}</button>${flIcon}</td>${flTotalCell}${flCats.map(v=>numCell(v)).join('')}</tr>`
             if(flEx){
-              const areaSiblingAvg=flTotal/fl.areas.length
               fl.areas.forEach(area=>{
                 const aTotal=Math.round(flTotal/fl.areas.length)
                 const aCats=distToVals(area.dist,aTotal)
-                const aFlag=flFlag&&area.name===hArea?ANOMALY_SVG:''
-                html+=`<tr class="subrow subrow-l3"><td>${area.name}${aFlag}</td>${numCell(aTotal,false,areaSiblingAvg)}${aCats.map(v=>numCell(v)).join('')}</tr>`
+                html+=`<tr class="subrow subrow-l3"><td>${area.name}</td>${numCell(aTotal)}${aCats.map(v=>numCell(v)).join('')}</tr>`
               })
             }
           })
@@ -1197,4 +1228,4 @@ renderIncidentsTable()
 <!-- bust 1773281659 -->
 <!-- bust 1773281879 -->
 <!-- bust 1773282057 -->
-<!-- bust 1773500000 -->
+<!-- bust 1773600000 -->
