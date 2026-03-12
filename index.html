@@ -134,6 +134,7 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--t1);font-si
 .spike-val{color:#dc2626;font-weight:700}
 .spike-avg{color:#dc2626;font-size:11px;margin-left:4px;font-weight:500}
 .view-link{background:none;border:none;padding:0;margin-left:6px;color:var(--acc);font-size:12px;font-weight:500;text-decoration:underline;cursor:pointer;vertical-align:middle}
+.spike-view{flex-shrink:0;margin-left:0;margin-right:4px}
 .area-spike{background:#fff5f5;border-left:2px solid #dc2626}
 .site-row-label .anomaly-flag{margin-left:5px;margin-right:0}
 
@@ -393,7 +394,7 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--t1);font-si
   <!-- ══ MAIN ══ -->
   <div class="main">
     <div class="topbar">
-      <div class="topbar-left"><small>Analytics</small><h1>Incidents <span style="font-size:11px;font-weight:400;color:var(--t3);vertical-align:middle">v1.5</span></h1></div>
+      <div class="topbar-left"><small>Analytics</small><h1>Incidents <span style="font-size:11px;font-weight:400;color:var(--t3);vertical-align:middle">v1.6</span></h1></div>
       <div class="topbar-right">
         <button class="btn">↓ PNG</button>
         <button class="btn">↓ CSV</button>
@@ -1504,14 +1505,14 @@ function renderBysite(){
       const vj=JSON.stringify(d.vals).replace(/"/g,'&quot;')
       const isHL=drawerState&&drawerState.siteId===d.site.id&&drawerState.monthIdx===period.monthIdx
       const isSpike=d.site.id===spikeSiteId
-      const spikeExtra=isSpike?`${ANOMALY_SVG}<button class="view-link" onclick="event.stopPropagation();viewSpikeInDrawer('${d.site.id}',${period.monthIdx},'${period.label}',${vj})">View</button>`:''
       return `
         <div class="site-row${isHL?' highlighted':''}" style="animation-delay:${ri*30}ms"
              data-site="${d.site.id}" data-month="${period.monthIdx}"
              onclick="handleSiteRowClick('${d.site.id}',${period.monthIdx},'${period.label}',${vj})"
              onmouseenter="showTip(event,'${d.site.name}',${vj},${tot},'${period.label}')"
              onmouseleave="hideTip()">
-          <div class="site-row-label">${d.site.name}${spikeExtra}</div>
+          <div class="site-row-label">${d.site.name}${isSpike?ANOMALY_SVG:''}</div>
+          ${isSpike?`<button class="view-link spike-view" onclick="event.stopPropagation();viewSpikeInDrawer('${d.site.id}',${period.monthIdx},'${period.label}',${vj})">View</button>`:''}
           <div class="site-row-bar">${segs}</div>
           <div class="site-row-total">${tot||'—'}</div>
         </div>`
@@ -1713,7 +1714,7 @@ renderTimeline(); renderTimelineTable(); updateKPIs(); renderIncidentsTable()
 </script>
 </body>
 </html>
-<!-- bust 1741772000 -->
+<!-- bust 1741772600 -->
 <!-- Wed Mar 11 12:56:49 CET 2026 -->
 <!-- cache-bust 1773258729 -->
 <!-- bust 1773281659 -->
