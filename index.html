@@ -396,7 +396,7 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--t1);font-si
   <!-- ══ MAIN ══ -->
   <div class="main">
     <div class="topbar">
-      <div class="topbar-left"><small>Analytics</small><h1>Incidents <span style="font-size:11px;font-weight:400;color:var(--t3);vertical-align:middle">v1.9</span></h1></div>
+      <div class="topbar-left"><small>Analytics</small><h1>Incidents <span style="font-size:11px;font-weight:400;color:var(--t3);vertical-align:middle">v2.0</span></h1></div>
       <div class="topbar-right">
         <button class="btn">↓ PNG</button>
         <button class="btn">↓ CSV</button>
@@ -1122,7 +1122,7 @@ function renderDrawerBody(){
     const isOpen = !!expandedBldgs[bld.id]
     const barChartSVG = buildBarChartSVG(bldVals, filtBldTotal)
     const isBldSpike = sp && bld.id === sp.bldId
-    const bldSpikeExtra = isBldSpike ? `${ANOMALY_SVG}<button class="view-link" onclick="event.stopPropagation();viewSpikeFloor('${bld.id}','${sp.flId}')">View</button>` : ''
+    const bldSpikeExtra = isBldSpike ? `${ANOMALY_SVG}<button class="view-link" style="margin-left:8px" onclick="event.stopPropagation();viewSpikeFloor('${bld.id}','${sp.flId}')">View issue</button>` : ''
 
     let floorsHtml = ''
     bld.floors.forEach(fl=>{
@@ -1717,7 +1717,7 @@ renderTimeline(); renderTimelineTable(); updateKPIs(); renderIncidentsTable()
 </script>
 </body>
 </html>
-<!-- bust 1741774600 -->
+<!-- bust 1741775200 -->
 <!-- Wed Mar 11 12:56:49 CET 2026 -->
 <!-- cache-bust 1773258729 -->
 <!-- bust 1773281659 -->
