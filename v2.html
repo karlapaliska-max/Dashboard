@@ -136,6 +136,12 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--t1);font-si
 .spike-val{color:#EF4444;font-weight:700}
 .spike-avg{font-size:10px;color:#EF4444;font-weight:500;margin-left:4px;opacity:.8;font-family:'Inter',sans-serif}
 
+/* ══ GRAN TOGGLE ══ */
+.gran-toggle{display:inline-flex;border:1px solid var(--border);border-radius:var(--radius);overflow:hidden}
+.gb{padding:5px 12px;font-size:11px;font-weight:500;background:var(--surface);border:none;cursor:pointer;color:var(--t2);font-family:'Inter',sans-serif;transition:all .12s}
+.gb:hover{background:var(--bg);color:var(--t1)}
+.gb.on{background:var(--acc);color:#fff}
+
 /* ══ KPI TILES ══ */
 .kpis{display:grid;grid-template-columns:repeat(5,1fr);gap:12px;margin-bottom:20px}
 .kpi{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:14px 16px;position:relative;overflow:hidden;--kpi-top:var(--acc)}
@@ -280,6 +286,24 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--t1);font-si
         <div class="card-overflow">
           <div class="card-head"><div class="card-head-l"><h3>Site Breakdown</h3></div><div style="display:flex;gap:8px"><button class="btn">↓ CSV</button><button class="btn primary">↓ Excel</button></div></div>
           <div class="inc-table-wrap"><table class="inc-table" id="inc-table"><thead id="inc-thead"></thead><tbody id="inc-tbody"></tbody></table></div>
+        </div>
+      </div>
+
+      <!-- ── Site Breakdown by Time Card ── -->
+      <div class="card">
+        <div class="card-overflow">
+          <div class="card-head">
+            <div class="card-head-l"><h3>Site Breakdown by Time</h3></div>
+            <div style="display:flex;gap:8px;align-items:center">
+              <div class="gran-toggle">
+                <button class="gb on" onclick="setTLGran('month',this)">Month</button>
+                <button class="gb" onclick="setTLGran('week',this)">Week</button>
+              </div>
+              <button class="btn">↓ CSV</button>
+              <button class="btn primary">↓ Excel</button>
+            </div>
+          </div>
+          <div class="inc-table-wrap"><table class="inc-table" id="tl-table"><thead id="tl-thead"></thead><tbody id="tl-tbody"></tbody></table></div>
         </div>
       </div>
 
@@ -1171,6 +1195,92 @@ function renderKPIs(){
 }
 
 // ─────────────────────────────────────────────
+// SITE BREAKDOWN BY TIME TABLE
+// ─────────────────────────────────────────────
+let tlGran='month', tlExpandState={}
+
+function tlMonthRows(siteId){
+  return MO_ORDER.map((mi,fi)=>({
+    monthIdx:mi, label:MO_LABELS[fi],
+    cats:DATA[siteId][mi],
+    total:DATA[siteId][mi].reduce((a,b)=>a+b,0)
+  }))
+}
+
+function tlWeekRows(siteId){
+  const MO_SHORT=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec']
+  const MO_YR={0:2026,1:2026,2:2025,3:2025,4:2025,5:2025,6:2025,7:2025,8:2025,9:2025,10:2025,11:2025}
+  const DAYS=[31,28,31,30,31,30,31,31,30,31,30,31]
+  let rows=[]
+  MO_ORDER.forEach(mi=>{
+    const moTotal=DATA[siteId][mi].reduce((a,b)=>a+b,0)
+    const rng=_rng(siteId.split('').reduce((a,c)=>a+c.charCodeAt(0),0)*97+mi*31)
+    const d=DAYS[mi]
+    const w=Array.from({length:d},()=>0.3+rng()), ws=w.reduce((a,b)=>a+b,0)
+    let rem=moTotal
+    const dayTotals=w.map((v,i)=>{if(i===d-1)return Math.max(0,rem);const x=Math.round(v/ws*moTotal);rem-=x;return Math.max(0,x)})
+    for(let start=0;start<d;start+=7){
+      const wt=dayTotals.slice(start,Math.min(start+7,d)).reduce((a,b)=>a+b,0)
+      if(!wt) continue
+      const cats=DATA[siteId][mi].map(v=>Math.round(v/Math.max(moTotal,1)*wt))
+      rows.push({monthIdx:mi,label:`${MO_SHORT[mi]} W${Math.floor(start/7)+1} ${MO_YR[mi]}`,total:wt,cats})
+    }
+  })
+  return rows
+}
+
+// Find the spike month: highest monthly total vs site avg
+function findTimelineSpike(siteId){
+  const rows=tlMonthRows(siteId)
+  const avg=rows.reduce((s,r)=>s+r.total,0)/rows.length
+  const best=rows.reduce((a,b)=>a.total>=b.total?a:b)
+  return {monthIdx:best.monthIdx,pct:Math.round((best.total-avg)/avg*100)}
+}
+
+function viewSpikeTimeline(siteId){
+  tlExpandState[siteId]=true
+  renderTLTable()
+  setTimeout(()=>{
+    const el=document.querySelector('#tl-tbody .spike-val')
+    if(el) el.closest('tr')?.scrollIntoView({behavior:'smooth',block:'center'})
+  },80)
+}
+
+function renderTLTable(){
+  const thead=document.getElementById('tl-thead'), tbody=document.getElementById('tl-tbody')
+  if(!thead||!tbody) return
+  thead.innerHTML=`<tr><th style="min-width:200px">Site</th><th>Total</th>${TCOLS.map(c=>`<th style="min-width:90px">${c.label}</th>`).join('')}</tr>`
+  const rows=SITES.map(s=>{const cats=siteYearCatTotals(s.id);return{site:s,cats,total:cats.reduce((a,b)=>a+b,0)}})
+  const gc=CATS.map((_,ci)=>rows.reduce((s,r)=>s+r.cats[ci],0)), gt=gc.reduce((a,b)=>a+b,0)
+  let html=`<tr class="total-row"><td style="font-weight:600">Total</td>${numCell(gt,true)}${gc.map(v=>numCell(v)).join('')}</tr>`
+  rows.forEach(r=>{
+    const ex=!!tlExpandState[r.site.id]
+    const isAnomaly=isSiteAnomalous(r.site.id)
+    const sp=isAnomaly?findTimelineSpike(r.site.id):null
+    const extras=isAnomaly?`${ANOMALY_SVG}<button class="view-link" onclick="event.stopPropagation();viewSpikeTimeline('${r.site.id}')">View</button>`:''
+    html+=`<tr class="site-row" data-siteid="${r.site.id}"><td style="white-space:nowrap"><button class="expand-btn${ex?' open':''}" onclick="toggleTLRow('${r.site.id}')" data-expand="1"><span class="tri">▶</span></button><span class="site-name-link">${r.site.name}</span>${extras}</td>${numCell(r.total,true)}${r.cats.map(v=>numCell(v)).join('')}</tr>`
+    if(ex){
+      const subRows=tlGran==='week'?tlWeekRows(r.site.id):tlMonthRows(r.site.id)
+      subRows.forEach(sr=>{
+        if(!sr.total) return
+        // Spike: only on month-level match (week rows belonging to spike month also highlighted)
+        const isSpike=sp&&sr.monthIdx===sp.monthIdx
+        html+=`<tr class="subrow"><td>${sr.label}</td>${numCell(sr.total,false,isSpike?{pct:sp.pct}:null)}${sr.cats.map(v=>numCell(v)).join('')}</tr>`
+      })
+    }
+  })
+  tbody.innerHTML=html
+}
+
+function toggleTLRow(id){ tlExpandState[id]=!tlExpandState[id]; renderTLTable() }
+function setTLGran(mode,btn){
+  tlGran=mode
+  btn.closest('.gran-toggle').querySelectorAll('.gb').forEach(b=>b.classList.remove('on'))
+  btn.classList.add('on')
+  renderTLTable()
+}
+
+// ─────────────────────────────────────────────
 // CLOSE ADD-SITE PANEL ON OUTSIDE CLICK
 // ─────────────────────────────────────────────
 document.addEventListener('click',e=>{
@@ -1209,6 +1319,7 @@ renderLocChips()
 renderIncTypeFilters()
 renderTrendChart()
 renderIncidentsTable()
+renderTLTable()
 </script>
 </body>
 </html>
@@ -1226,4 +1337,4 @@ renderIncidentsTable()
 <!-- bust 1773281659 -->
 <!-- bust 1773281879 -->
 <!-- bust 1773282057 -->
-<!-- bust 1773800000 -->
+<!-- bust 1773900000 -->
