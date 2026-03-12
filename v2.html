@@ -1229,7 +1229,6 @@ function tlWeekRows(siteId){
   return rows
 }
 
-// Find the spike month: highest monthly total vs site avg
 function findTimelineSpike(siteId){
   const rows=tlMonthRows(siteId)
   const avg=rows.reduce((s,r)=>s+r.total,0)/rows.length
@@ -1263,7 +1262,6 @@ function renderTLTable(){
       const subRows=tlGran==='week'?tlWeekRows(r.site.id):tlMonthRows(r.site.id)
       subRows.forEach(sr=>{
         if(!sr.total) return
-        // Spike: only on month-level match (week rows belonging to spike month also highlighted)
         const isSpike=sp&&sr.monthIdx===sp.monthIdx
         html+=`<tr class="subrow"><td>${sr.label}</td>${numCell(sr.total,false,isSpike?{pct:sp.pct}:null)}${sr.cats.map(v=>numCell(v)).join('')}</tr>`
       })
