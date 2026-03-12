@@ -396,7 +396,7 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--t1);font-si
   <!-- ══ MAIN ══ -->
   <div class="main">
     <div class="topbar">
-      <div class="topbar-left"><small>Analytics</small><h1>Incidents <span style="font-size:11px;font-weight:400;color:var(--t3);vertical-align:middle">v1.7</span></h1></div>
+      <div class="topbar-left"><small>Analytics</small><h1>Incidents <span style="font-size:11px;font-weight:400;color:var(--t3);vertical-align:middle">v1.8</span></h1></div>
       <div class="topbar-right">
         <button class="btn">↓ PNG</button>
         <button class="btn">↓ CSV</button>
@@ -1515,8 +1515,7 @@ function renderBysite(){
              onclick="handleSiteRowClick('${d.site.id}',${period.monthIdx},'${period.label}',${vj})"
              onmouseenter="showTip(event,'${d.site.name}',${vj},${tot},'${period.label}')"
              onmouseleave="hideTip()">
-          <div class="site-row-label">${d.site.name}${isSpike?ANOMALY_SVG:''}</div>
-          ${isSpike?`<button class="view-link spike-view" onclick="event.stopPropagation();viewSpikeInDrawer('${d.site.id}',${period.monthIdx},'${period.label}',${vj})">View</button>`:''}
+          <div class="site-row-label">${isSpike?ANOMALY_SVG:''}${d.site.name}</div>
           <div class="site-row-bar">${segs}</div>
           <div class="site-row-total">${tot||'—'}</div>
         </div>`
@@ -1718,7 +1717,7 @@ renderTimeline(); renderTimelineTable(); updateKPIs(); renderIncidentsTable()
 </script>
 </body>
 </html>
-<!-- bust 1741773300 -->
+<!-- bust 1741774000 -->
 <!-- Wed Mar 11 12:56:49 CET 2026 -->
 <!-- cache-bust 1773258729 -->
 <!-- bust 1773281659 -->
