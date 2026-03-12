@@ -402,7 +402,7 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--t1);font-si
   <!-- ══ MAIN ══ -->
   <div class="main">
     <div class="topbar">
-      <div class="topbar-left"><small>Analytics</small><h1>Incidents <span style="font-size:11px;font-weight:400;color:var(--t3);vertical-align:middle">v2.16</span></h1></div>
+      <div class="topbar-left"><small>Analytics</small><h1>Incidents <span style="font-size:11px;font-weight:400;color:var(--t3);vertical-align:middle">v2.17</span></h1></div>
       <div class="topbar-right">
         <button class="btn">↓ PNG</button>
         <button class="btn">↓ CSV</button>
@@ -1134,7 +1134,7 @@ function renderDrawerBody(){
     const isOpen = !!expandedBldgs[bld.id]
     const barChartSVG = buildBarChartSVG(bldVals, filtBldTotal)
     const isBldSpike = sp && bld.id === sp.bldId
-    const bldSpikeExtra = isBldSpike ? `${ANOMALY_SVG_SM}<button class="view-link" style="margin-left:0" onclick="event.stopPropagation();viewSpikeFloor('${bld.id}','${sp.flId}')">View issue</button>` : ''
+    const bldSpikeExtra = isBldSpike ? `${ANOMALY_SVG_SM}<button class="view-link" style="margin-left:0;color:#EF4444;font-weight:600" onclick="event.stopPropagation();viewSpikeFloor('${bld.id}','${sp.flId}')">View issue</button>` : ''
 
     let floorsHtml = ''
     bld.floors.forEach(fl=>{
