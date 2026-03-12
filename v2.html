@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Analytics · Incidents v2</title>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
 <style>
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 :root{
@@ -19,10 +19,10 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--t1);font-si
 /* ══ SIDEBAR ══ */
 .sidebar{width:236px;background:var(--surface);border-right:1px solid var(--border);display:flex;flex-direction:column;flex-shrink:0;overflow-y:auto}
 .sb-brand{padding:16px 18px 14px;border-bottom:1px solid var(--border)}
-.sb-brand small{font-size:10px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:var(--t3)}
-.sb-brand h2{font-size:15px;font-weight:600;color:var(--t1);margin-top:2px}
-.nav-sec{padding:18px 18px 4px;font-size:10px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--t3)}
-.nav-item{display:flex;align-items:center;gap:10px;padding:7px 18px;color:var(--t2);cursor:pointer;font-size:13px;font-weight:400;border-left:2px solid transparent;transition:color .12s,background .12s}
+.sb-brand small{font-size:10px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:var(--t3);font-family:'Inter',sans-serif}
+.sb-brand h2{font-size:15px;font-weight:600;color:var(--t1);margin-top:2px;font-family:'Inter',sans-serif}
+.nav-sec{padding:18px 18px 4px;font-size:10px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--t3);font-family:'Inter',sans-serif}
+.nav-item{display:flex;align-items:center;gap:10px;padding:7px 18px;color:var(--t2);cursor:pointer;font-size:13px;font-weight:400;font-family:'Inter',sans-serif;border-left:2px solid transparent;transition:color .12s,background .12s}
 .nav-item:hover{color:var(--t1);background:var(--acc-l)}
 .nav-item.on{color:var(--acc);background:var(--acc-l);border-left-color:var(--acc);font-weight:500}
 .nav-item .ni{width:16px;height:16px;flex-shrink:0;opacity:.55;display:flex;align-items:center;justify-content:center}
@@ -32,9 +32,10 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--t1);font-si
 .main{flex:1;display:flex;flex-direction:column;min-width:0;overflow:hidden}
 
 /* ══ TOPBAR ══ */
-.topbar{background:var(--surface);border-bottom:1px solid var(--border);padding:0 28px;height:56px;flex-shrink:0;display:flex;align-items:center;justify-content:space-between}
+.topbar{background:var(--surface);border-bottom:1px solid var(--border);padding:16px 28px 14px;flex-shrink:0;display:flex;align-items:center;justify-content:space-between}
 .topbar-left small{font-size:10px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:var(--t3)}
-.topbar-left h1{font-size:18px;font-weight:600;color:var(--t1)}
+.topbar-left h1{font-size:22px;font-weight:600;color:var(--t1);margin-top:2px;line-height:1}
+.topbar-ver{font-size:11px;font-weight:400;color:var(--t3);vertical-align:middle}
 .btn{display:inline-flex;align-items:center;gap:5px;padding:6px 13px;border-radius:var(--radius);font-family:'Inter',sans-serif;font-size:12px;font-weight:500;cursor:pointer;border:1px solid var(--border);background:var(--surface);color:var(--t2);transition:all .14s;white-space:nowrap}
 .btn:hover{border-color:var(--border2);color:var(--t1);background:var(--bg)}
 .btn.primary{background:var(--acc);border-color:var(--acc);color:#fff}
@@ -102,10 +103,10 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--t1);font-si
 .tt-row{display:flex;align-items:center;justify-content:space-between;gap:14px;margin-bottom:3px;font-size:11px;color:var(--t2)}
 .tt-dot{width:7px;height:7px;border-radius:50%;flex-shrink:0;margin-right:2px}
 .tt-lname{flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.tt-row span:last-child{font-family:'JetBrains Mono',monospace;color:var(--t1);font-weight:500;flex-shrink:0}
+.tt-row span:last-child{font-family:'Inter',sans-serif;color:var(--t1);font-weight:500;flex-shrink:0}
 .tt-sep{height:1px;background:var(--border);margin:5px 0}
 .tt-total{display:flex;justify-content:space-between;font-size:11px;font-weight:600;color:var(--t1)}
-.tt-total span:last-child{font-family:'JetBrains Mono',monospace}
+.tt-total span:last-child{font-family:'Inter',sans-serif}
 
 /* ══ TABLE ══ */
 .inc-table-wrap{overflow-x:auto}
@@ -115,7 +116,7 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--t1);font-si
 .inc-table tr:last-child td{border-bottom:none}
 .inc-table tr.total-row td{font-weight:600;background:var(--bg)}
 .expand-btn{display:inline-flex;align-items:center;gap:6px;cursor:pointer;font-weight:500;color:var(--t1);background:none;border:none;font-family:inherit;font-size:inherit;padding:0}
-.expand-btn .tri{font-size:9px;color:var(--t3);transition:transform .14s;display:inline-block}
+.expand-btn .tri{color:var(--t3);transition:transform .14s;display:inline-flex;align-items:center}
 .expand-btn.open .tri{transform:rotate(90deg)}
 .inc-table tr.subrow td{background:var(--bg)}
 .inc-table tr.subrow td:first-child{padding-left:34px;color:var(--t2);font-size:11px}
@@ -123,18 +124,24 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--t1);font-si
 .inc-table tr.subrow-l2 td:first-child{padding-left:52px;color:var(--t2);font-size:11px}
 .inc-table tr.subrow-l3 td{background:var(--surface)}
 .inc-table tr.subrow-l3 td:first-child{padding-left:70px;color:var(--t3);font-size:11px}
-.inc-table td.num{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--t2)}
+.inc-table td.num{font-family:'Inter',sans-serif;font-size:11px;color:var(--t2)}
 .inc-table td.num.bold{font-weight:600;color:var(--t1);font-size:12px}
 .site-name-link{color:var(--t1);font-weight:500;margin-left:6px}
 .anomaly-flag{display:inline-flex;align-items:center;vertical-align:middle;margin-left:5px;flex-shrink:0;opacity:.9}
-.view-link{color:var(--acc);text-decoration:underline;cursor:pointer;font-size:12px;font-weight:500;border:none;background:none;font-family:inherit;padding:0;margin-left:6px;white-space:nowrap}
-.view-link:hover{color:#1d4ed8}
+.bld-header-top .anomaly-flag{margin-left:0}
+.bld-header-top .anomaly-flag svg{width:12px;height:12px}
+.view-link{background:none;border:none;padding:0;margin-left:6px;color:#EF4444;font-size:12px;font-weight:500;text-decoration:none;cursor:pointer;vertical-align:middle}
+.view-link:hover{text-decoration:underline}
 .inc-table tr.site-row{cursor:pointer}
 .inc-table tr.site-row:hover td{background:color-mix(in srgb,var(--acc) 5%,var(--surface) 95%)}
 
 /* ══ SPIKE HIGHLIGHT ══ */
 .spike-val{color:#EF4444;font-weight:700}
 .spike-avg{font-size:10px;color:#EF4444;font-weight:500;margin-left:4px;opacity:.8;font-family:'Inter',sans-serif}
+.spike-dot{color:var(--t3);margin:0 2px}
+.spike-chip{display:inline-block;background:#fee2e2;color:#b91c1c;font-size:11px;font-weight:500;padding:1px 7px;border-radius:20px;margin-left:4px;vertical-align:middle;white-space:nowrap}
+.area-spike{background:#fff5f5;border-left:2px solid #dc2626}
+.area-row .spike-val{font-size:12px}
 
 /* ══ GRAN TOGGLE ══ */
 .gran-toggle{display:inline-flex;border:1px solid var(--border);border-radius:var(--radius);overflow:hidden}
@@ -147,7 +154,7 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--t1);font-si
 .kpi{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:14px 16px;position:relative;overflow:hidden;--kpi-top:var(--acc)}
 .kpi::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;background:var(--kpi-top)}
 .kpi-lbl{font-size:11px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--t3);margin-bottom:4px}
-.kpi-val{font-family:'JetBrains Mono',monospace;font-size:24px;font-weight:500;color:var(--t1);line-height:1.1}
+.kpi-val{font-family:'Inter',sans-serif;font-size:24px;font-weight:500;color:var(--t1);line-height:1.1}
 .kpi-val.sm{font-size:18px}
 .kpi-sub{font-size:12px;color:var(--t2);margin-top:5px;font-weight:500}
 
@@ -162,10 +169,9 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--t1);font-si
 .drawer-subtitle{font-size:14px;color:var(--t2);margin-top:3px}
 .drawer-close{width:28px;height:28px;display:flex;align-items:center;justify-content:center;border-radius:var(--radius);border:1px solid var(--border);background:var(--surface);cursor:pointer;color:var(--t2);font-size:14px;flex-shrink:0;transition:all .14s}
 .drawer-close:hover{background:var(--border);color:var(--t1)}
-.drawer-metrics{display:flex;gap:0;border-bottom:1px solid var(--border);flex-shrink:0;background:var(--bg)}
-.drawer-metric{flex:1;padding:10px 14px;border-right:1px solid var(--border);text-align:center}
-.drawer-metric:last-child{border-right:none}
-.drawer-metric-val{font-family:'JetBrains Mono',monospace;font-size:26px;font-weight:500;color:var(--t1);line-height:1}
+.drawer-metrics{display:flex;gap:8px;background:#fff;padding:12px 16px 0;flex-shrink:0}
+.drawer-metric{flex:1;padding:12px 14px;background:var(--bg);border:1px solid var(--border);border-radius:var(--radius);display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center}
+.drawer-metric-val{font-family:'Inter',sans-serif;font-size:26px;font-weight:500;color:var(--t1);line-height:1}
 .drawer-metric-lbl{font-size:14px;color:var(--t3);margin-top:2px;font-weight:500}
 .drawer-toolbar{display:flex;align-items:center;justify-content:space-between;padding:10px 16px;border-bottom:1px solid var(--border);flex-shrink:0;background:var(--surface);gap:10px}
 .dr-month-select{padding:6px 10px;border-radius:var(--radius);border:1px solid var(--border);background:var(--surface);font-family:'Inter',sans-serif;font-size:13px;font-weight:500;color:var(--t1);cursor:pointer;outline:none;min-width:138px;transition:border-color .14s}
@@ -176,11 +182,11 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--t1);font-si
 .bld-header:hover{background:var(--bg)}
 .bld-header.open{background:var(--acc-l)}
 .bld-header-top{display:flex;align-items:center;gap:8px}
-.bld-caret{font-size:11px;color:var(--t3);flex-shrink:0;transition:transform .18s;line-height:1}
+.bld-caret{color:var(--t3);flex-shrink:0;transition:transform .18s;display:inline-flex;align-items:center}
 .bld-header.open .bld-caret{transform:rotate(90deg);color:var(--acc)}
 .bld-name{font-size:14px;font-weight:600;color:var(--t1);flex:1}
 .bld-header.open .bld-name{color:var(--acc)}
-.bld-count{font-family:'JetBrains Mono',monospace;font-size:14px;color:var(--t3);margin-left:auto}
+.bld-count{font-family:'Inter',sans-serif;font-size:14px;color:var(--t3);margin-left:auto}
 .bld-barchart{width:100%;overflow:visible}
 .bld-body{overflow:hidden;max-height:0;transition:max-height .28s cubic-bezier(.4,0,.2,1);background:#EFF6FF}
 .bld-body.open{max-height:2000px}
@@ -189,11 +195,11 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--t1);font-si
 .floor-header:hover{background:#D9EAFF}
 .floor-header.open{background:#EFF6FF}
 .floor-header-top{display:flex;align-items:center;gap:10px}
-.floor-caret{font-size:9px;color:var(--t3);flex-shrink:0;transition:transform .18s;width:10px}
+.floor-caret{color:var(--t3);flex-shrink:0;transition:transform .18s;display:inline-flex;align-items:center}
 .floor-header.open .floor-caret{transform:rotate(90deg);color:var(--acc)}
 .floor-name{font-size:14px;font-weight:500;color:var(--t2);flex:1}
 .floor-header.open .floor-name{color:var(--t1);font-weight:600}
-.floor-count{font-family:'JetBrains Mono',monospace;font-size:14px;color:var(--t3)}
+.floor-count{font-family:'Inter',sans-serif;font-size:14px;color:var(--t3)}
 .floor-minibar{width:100%;height:8px;background:var(--acc-m);border-radius:2px;overflow:hidden;display:flex}
 .floor-minibar-seg{height:100%;transition:width .4s .05s cubic-bezier(.4,0,.2,1)}
 .floor-body{overflow:hidden;max-height:0;transition:max-height .24s cubic-bezier(.4,0,.2,1);background:#EFF6FF}
@@ -204,14 +210,14 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--t1);font-si
 .area-name{font-size:14px;font-weight:500;color:var(--t2);flex:1}
 .area-bar-wrap{width:100%;height:7px;background:var(--acc-m);border-radius:2px;overflow:hidden;display:flex;cursor:pointer}
 .area-bar-seg{height:100%;transition:width .4s .1s cubic-bezier(.4,0,.2,1)}
-.area-count{font-family:'JetBrains Mono',monospace;font-size:14px;color:var(--t3);flex-shrink:0}
+.area-count{font-family:'Inter',sans-serif;font-size:14px;color:var(--t3);flex-shrink:0}
 /* Category bar tooltip */
 .cat-tooltip{position:fixed;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:12px 14px;z-index:1000;pointer-events:none;box-shadow:0 4px 16px rgba(0,0,0,.08);width:196px;display:none}
 .ctt-header{display:flex;align-items:center;gap:7px;margin-bottom:8px;padding-bottom:7px;border-bottom:1px solid var(--border)}
 .ctt-dot{width:9px;height:9px;border-radius:50%;flex-shrink:0}
 .ctt-name{font-size:12px;font-weight:600;color:var(--t1);line-height:1.3}
 .ctt-stat{display:flex;align-items:baseline;gap:5px;margin-bottom:3px}
-.ctt-count{font-family:'JetBrains Mono',monospace;font-size:22px;font-weight:500;color:var(--t1)}
+.ctt-count{font-family:'Inter',sans-serif;font-size:22px;font-weight:500;color:var(--t1)}
 .ctt-unit{font-size:11px;color:var(--t3)}
 .ctt-peak{font-size:11px;color:var(--t3)}
 .ctt-spark-wrap{margin-top:8px;border-top:1px solid var(--border);padding-top:6px}
@@ -242,7 +248,7 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--t1);font-si
   <!-- ── Main ── -->
   <div class="main">
     <div class="topbar">
-      <div class="topbar-left"><small>Analytics · v2.4</small><h1>Incidents</h1></div>
+      <div class="topbar-left"><small>Analytics</small><h1>Incidents <span class="topbar-ver">v2.20</span></h1></div>
     </div>
 
     <div class="content">
@@ -359,6 +365,16 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--t1);font-si
 <div class="area-tooltip" id="area-tooltip"></div>
 
 <script>
+// ─────────────────────────────────────────────
+// CHEVRON ICONS
+// ─────────────────────────────────────────────
+const CHEVRON_RIGHT=`<svg xmlns="http://www.w3.org/2000/svg" width="10" height="10" viewBox="0 0 12 12"><path d="m4.25,11c-.192,0-.384-.073-.53-.22-.293-.293-.293-.768,0-1.061l3.72-3.72-3.72-3.72c-.293-.293-.293-.768,0-1.061s.768-.293,1.061,0l4.25,4.25c.293.293.293.768,0,1.061l-4.25,4.25c-.146.146-.338.22-.53.22Z" fill="currentColor"/></svg>`
+const CHEVRON_DOWN=`<svg xmlns="http://www.w3.org/2000/svg" width="10" height="10" viewBox="0 0 12 12"><path d="m6,9.25c-.192,0-.384-.073-.53-.22L1.22,4.78c-.293-.293-.293-.768,0-1.061s.768-.293,1.061,0l3.72,3.72,3.72-3.72c.293-.293.768-.293,1.061,0s.293.768,0,1.061l-4.25,4.25c-.146.146-.338.22-.53.22Z" fill="currentColor"/></svg>`
+// ─────────────────────────────────────────────
+// ANOMALY ICONS
+// ─────────────────────────────────────────────
+const ANOMALY_SVG=`<span class="anomaly-flag" title="Spike detected – unusually high activity in at least one month"><svg width="14" height="14" viewBox="0 0 18 18" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M9 1C4.589 1 1 4.5889 1 9C1 13.4111 4.589 17 9 17C13.411 17 17 13.4111 17 9C17 4.5889 13.411 1 9 1ZM8.25 5.4312C8.25 5.0171 8.5859 4.6812 9 4.6812C9.4141 4.6812 9.75 5.0171 9.75 5.4312V9.5C9.75 9.9141 9.4141 10.25 9 10.25C8.5859 10.25 8.25 9.9141 8.25 9.5V5.4312ZM9 13.417C8.448 13.417 8 12.968 8 12.417C8 11.866 8.448 11.417 9 11.417C9.552 11.417 10 11.866 10 12.417C10 12.968 9.552 13.417 9 13.417Z" fill="#EF4444"/></svg></span>`
+const ANOMALY_SVG_SM=`<span class="anomaly-flag" title="Spike detected"><svg width="12" height="12" viewBox="0 0 18 18" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M9 1C4.589 1 1 4.5889 1 9C1 13.4111 4.589 17 9 17C13.411 17 17 13.4111 17 9C17 4.5889 13.411 1 9 1ZM8.25 5.4312C8.25 5.0171 8.5859 4.6812 9 4.6812C9.4141 4.6812 9.75 5.0171 9.75 5.4312V9.5C9.75 9.9141 9.4141 10.25 9 10.25C8.5859 10.25 8.25 9.9141 8.25 9.5V5.4312ZM9 13.417C8.448 13.417 8 12.968 8 12.417C8 11.866 8.448 11.417 9 11.417C9.552 11.417 10 11.866 10 12.417C10 12.968 9.552 13.417 9 13.417Z" fill="#EF4444"/></svg></span>`
 // ─────────────────────────────────────────────
 // DATA
 // ─────────────────────────────────────────────
@@ -586,14 +602,14 @@ function renderTrendChart(){
     const v=Math.round(niceMax*i/yTicks)
     const y=yOf(v).toFixed(1)
     grid+=`<line x1="${PL}" y1="${y}" x2="${(PL+cW).toFixed(1)}" y2="${y}" stroke="#E4E7ED" stroke-width="1"/>`
-    grid+=`<text x="${(PL-8).toFixed(1)}" y="${(parseFloat(y)+4).toFixed(1)}" fill="#9AA3B4" font-size="10" text-anchor="end" font-family="JetBrains Mono">${v}</text>`
+    grid+=`<text x="${(PL-8).toFixed(1)}" y="${(parseFloat(y)+4).toFixed(1)}" fill="#9AA3B4" font-size="10" text-anchor="end" font-family="Inter,sans-serif">${v}</text>`
   }
 
   // X-axis labels (skip empties for day mode)
   const step=n>30?7:n>12?Math.ceil(n/12):1
   for(let i=0;i<n;i+=step){
     if(!xLabels[i]) continue
-    xlabels+=`<text x="${xOf(i).toFixed(1)}" y="${(PT+cH+14).toFixed(1)}" fill="#9AA3B4" font-size="10" text-anchor="middle" font-family="JetBrains Mono">${xLabels[i]}</text>`
+    xlabels+=`<text x="${xOf(i).toFixed(1)}" y="${(PT+cH+14).toFixed(1)}" fill="#9AA3B4" font-size="10" text-anchor="middle" font-family="Inter,sans-serif">${xLabels[i]}</text>`
   }
 
   // Lines + dots
@@ -711,7 +727,7 @@ function renderAddSitePanel(){
     const siteAdded=isLocAdded('site',site.id)
     const struct=DRILLDOWN_STRUCTURE[site.id]
     html+=`<div class="asd-item">
-      <button class="asd-expand${siteEx?' open':''}" onclick="toggleAsdNode('s_${site.id}')">${struct?'▶':''}</button>
+      <button class="asd-expand${siteEx?' open':''}" onclick="toggleAsdNode('s_${site.id}')">${struct?CHEVRON_RIGHT:''}</button>
       <span class="asd-name">${site.name}</span>
       <button class="asd-add${siteAdded?' added':''}" onclick="addLocation('site','${site.id}')">${siteAdded?'✓':'+'}</button>
     </div>`
@@ -722,7 +738,7 @@ function renderAddSitePanel(){
         const bldAdded=isLocAdded('building',site.id,bld.id)
         html+=`<div class="asd-item is-bld">
           <span class="asd-spacer"></span>
-          <button class="asd-expand${bldEx?' open':''}" onclick="toggleAsdNode('${bldKey}')">▶</button>
+          <button class="asd-expand${bldEx?' open':''}" onclick="toggleAsdNode('${bldKey}')">${CHEVRON_RIGHT}</button>
           <span class="asd-name">${bld.name}</span>
           <button class="asd-add${bldAdded?' added':''}" onclick="addLocation('building','${site.id}','${bld.id}')">${bldAdded?'✓':'+'}</button>
         </div>`
@@ -733,7 +749,7 @@ function renderAddSitePanel(){
             const flAdded=isLocAdded('floor',site.id,bld.id,fl.id)
             html+=`<div class="asd-item is-fl">
               <span class="asd-spacer"></span><span class="asd-spacer"></span>
-              <button class="asd-expand${flEx?' open':''}" onclick="toggleAsdNode('${flKey}')">▶</button>
+              <button class="asd-expand${flEx?' open':''}" onclick="toggleAsdNode('${flKey}')">${CHEVRON_RIGHT}</button>
               <span class="asd-name">${fl.name}</span>
               <button class="asd-add${flAdded?' added':''}" onclick="addLocation('floor','${site.id}','${bld.id}','${fl.id}')">${flAdded?'✓':'+'}</button>
             </div>`
@@ -847,6 +863,16 @@ const CRITICAL_SITE_ID=(()=>SITES.reduce((bestId,s)=>{
   return ratio>Math.max(...bt)/bavg?s.id:bestId
 },SITES[0].id))()
 function isSiteAnomalous(siteId){ return siteId===CRITICAL_SITE_ID }
+// Daily duress distribution for a site+month (deterministic)
+function dailyDuress(siteId,mi){
+  const rng=_rng(siteId.split('').reduce((a,c)=>a+c.charCodeAt(0),0)*97+mi*31)
+  const total=DATA[siteId][mi][0]
+  const DAYS=[31,28,31,30,31,30,31,31,30,31,30,31]
+  const n=DAYS[mi]
+  const w=Array.from({length:n},()=>0.3+rng()), ws=w.reduce((a,b)=>a+b,0)
+  let rem=total
+  return w.map((v,i)=>{if(i===n-1)return Math.max(0,rem);const x=Math.round(v/ws*total);rem-=x;return Math.max(0,x)})
+}
 // Find the exact area+category where the spike is highest (ratio vs sibling areas)
 // Returns {bldId, flId, areaName, catIdx, pct} or null
 function findSpikePath(siteId){
@@ -871,7 +897,7 @@ function findSpikePath(siteId){
         if(ratio>bestRatio){
           bestRatio=ratio
           const pct=Math.round((maxVal-avg)/avg*100)
-          best={bldId:bld.id,flId:fl.id,areaName:fl.areas[vals.indexOf(maxVal)].name,catIdx:ci,pct}
+          best={bldId:bld.id,flId:fl.id,areaName:fl.areas[vals.indexOf(maxVal)].name,catIdx:ci,pct,maxVal}
         }
       })
     })
@@ -904,8 +930,8 @@ function renderIncidentsTable(){
     const isAnomaly=isSiteAnomalous(r.site.id)
     const sp=isAnomaly?findSpikePath(r.site.id):null
     // Site row: black name, warning + View only — no bold red, no total highlight
-    const siteExtras=isAnomaly?`${ANOMALY_SVG}<button class="view-link" onclick="event.stopPropagation();viewSpike('${r.site.id}')">View</button>`:''
-    html+=`<tr class="site-row" data-siteid="${r.site.id}"><td style="white-space:nowrap"><button class="expand-btn${ex?' open':''}" onclick="toggleTableRow('${r.site.id}')" data-expand="1"><span class="tri">▶</span></button><span class="site-name-link">${r.site.name}</span>${siteExtras}</td>${numCell(r.total,true)}${r.cats.map(v=>numCell(v)).join('')}</tr>`
+    const siteExtras=isAnomaly?`${ANOMALY_SVG}<button class="view-link" onclick="event.stopPropagation();viewSpike('${r.site.id}')">View issue</button>`:''
+    html+=`<tr class="site-row" data-siteid="${r.site.id}"><td style="white-space:nowrap"><button class="expand-btn${ex?' open':''}" onclick="toggleTableRow('${r.site.id}')" data-expand="1"><span class="tri">${CHEVRON_RIGHT}</span></button><span class="site-name-link">${r.site.name}</span>${siteExtras}</td>${numCell(r.total,true)}${r.cats.map(v=>numCell(v)).join('')}</tr>`
     if(ex){
       const struct=DRILLDOWN_STRUCTURE[r.site.id]; if(!struct) return
       const bldAreaCounts=struct.buildings.map(b=>b.floors.reduce((s,f)=>s+f.areas.length,0))
@@ -917,7 +943,7 @@ function renderIncidentsTable(){
         const bldCats=distToVals(bldDist,bldTotal)
         const bldKey=r.site.id+'|'+bld.id, bldEx=!!tableBldState[bldKey]
         // Building: no icon, plain total
-        html+=`<tr class="subrow"><td><button class="expand-btn${bldEx?' open':''}" onclick="toggleTableBld('${r.site.id}','${bld.id}')"><span class="tri">▶</span>${bld.name}</button></td>${numCell(bldTotal)}${bldCats.map(v=>numCell(v)).join('')}</tr>`
+        html+=`<tr class="subrow"><td><button class="expand-btn${bldEx?' open':''}" onclick="toggleTableBld('${r.site.id}','${bld.id}')"><span class="tri">${CHEVRON_RIGHT}</span>${bld.name}</button></td>${numCell(bldTotal)}${bldCats.map(v=>numCell(v)).join('')}</tr>`
         if(bldEx){
           const bldAreaTotal=bld.floors.reduce((s,f)=>s+f.areas.length,0)
           bld.floors.forEach(fl=>{
@@ -926,7 +952,7 @@ function renderIncidentsTable(){
             const flCats=distToVals(flDist,flTotal)
             const flKey=r.site.id+'|'+bld.id+'|'+fl.id, flEx=!!tableFloorState[flKey]
             // Floor: no icon, plain total
-            html+=`<tr class="subrow subrow-l2"><td><button class="expand-btn${flEx?' open':''}" onclick="toggleTableFloor('${r.site.id}','${bld.id}','${fl.id}')"><span class="tri">▶</span>${fl.name}</button></td>${numCell(flTotal)}${flCats.map(v=>numCell(v)).join('')}</tr>`
+            html+=`<tr class="subrow subrow-l2"><td><button class="expand-btn${flEx?' open':''}" onclick="toggleTableFloor('${r.site.id}','${bld.id}','${fl.id}')"><span class="tri">${CHEVRON_RIGHT}</span>${fl.name}</button></td>${numCell(flTotal)}${flCats.map(v=>numCell(v)).join('')}</tr>`
             if(flEx){
               fl.areas.forEach(area=>{
                 const aTotal=Math.round(flTotal/fl.areas.length)
@@ -972,15 +998,15 @@ function openDrawer(siteId,monthIdx,periodLabel,vals){
   document.getElementById('dr-site-label').textContent=`${site.name} · ${periodLabel}`
   document.getElementById('dr-title').textContent=`${site.name} — ${periodLabel}`
   document.getElementById('dr-subtitle').textContent=`Total Incidents: ${total}`
-  const maxCatIdx=CATS.reduce((best,c,i)=>(vals[i]||0)>(vals[best]||0)?i:best,0)
-  const topCat=CATS[maxCatIdx].label
   const critical=vals[0]||0
   const critPct=total>0?Math.round(critical/total*100)+'%':'—'
+  const dailyD=dailyDuress(siteId,monthIdx), peakDay=dailyD.indexOf(Math.max(...dailyD))
+  const peakDateLbl=`${MONTHS[monthIdx].substring(0,3)} ${peakDay+1}`
   document.getElementById('dr-metrics').innerHTML=`
     <div class="drawer-metric"><div class="drawer-metric-val">${total}</div><div class="drawer-metric-lbl">Total</div></div>
     <div class="drawer-metric"><div class="drawer-metric-val" style="color:#C0385A">${critical}</div><div class="drawer-metric-lbl">Critical</div></div>
     <div class="drawer-metric"><div class="drawer-metric-val" style="color:#C0385A">${critPct}</div><div class="drawer-metric-lbl">% Critical</div></div>
-    <div class="drawer-metric" style="max-width:150px"><div class="drawer-metric-val" style="font-size:14px;font-weight:600;color:var(--t2);line-height:1.3">${topCat.split('–')[0].trim()}</div><div class="drawer-metric-lbl">Top Category</div></div>
+    <div class="drawer-metric"><div class="drawer-metric-val" style="color:var(--t2);font-size:18px">${peakDateLbl}</div><div class="drawer-metric-lbl">Peak Day</div></div>
   `
   renderDrawerMonthSelect()
   renderDrawerBody()
@@ -1009,10 +1035,10 @@ function navigateDrawerMonth(monthIdx){
   drawerState={...drawerState,monthIdx,periodLabel,vals}
   const site=SITES.find(s=>s.id===siteId)
   const total=vals.reduce((s,v)=>s+(v||0),0)
-  const maxCatIdx=CATS.reduce((best,c,i)=>(vals[i]||0)>(vals[best]||0)?i:best,0)
-  const topCat=CATS[maxCatIdx].label
   const critical=vals[0]||0
   const critPct=total>0?Math.round(critical/total*100)+'%':'—'
+  const dailyD=dailyDuress(siteId,monthIdx), peakDay=dailyD.indexOf(Math.max(...dailyD))
+  const peakDateLbl=`${MONTHS[monthIdx].substring(0,3)} ${peakDay+1}`
   document.getElementById('dr-site-label').textContent=`${site.name} · ${periodLabel}`
   document.getElementById('dr-title').textContent=`${site.name} — ${periodLabel}`
   document.getElementById('dr-subtitle').textContent=`Total Incidents: ${total}`
@@ -1020,7 +1046,7 @@ function navigateDrawerMonth(monthIdx){
     <div class="drawer-metric"><div class="drawer-metric-val">${total}</div><div class="drawer-metric-lbl">Total</div></div>
     <div class="drawer-metric"><div class="drawer-metric-val" style="color:#C0385A">${critical}</div><div class="drawer-metric-lbl">Critical</div></div>
     <div class="drawer-metric"><div class="drawer-metric-val" style="color:#C0385A">${critPct}</div><div class="drawer-metric-lbl">% Critical</div></div>
-    <div class="drawer-metric" style="max-width:150px"><div class="drawer-metric-val" style="font-size:14px;font-weight:600;color:var(--t2);line-height:1.3">${topCat.split('–')[0].trim()}</div><div class="drawer-metric-lbl">Top Category</div></div>
+    <div class="drawer-metric"><div class="drawer-metric-val" style="color:var(--t2);font-size:18px">${peakDateLbl}</div><div class="drawer-metric-lbl">Peak Day</div></div>
   `
   renderDrawerMonthSelect()
   renderDrawerBody()
@@ -1057,7 +1083,7 @@ function buildBarChartSVG(vals,total){
     const bx=(cx-barW/2).toFixed(1)
     const by=(chartBottom-bH).toFixed(1)
     bars+=`<rect x="${bx}" y="${by}" width="${barW.toFixed(1)}" height="${bH}" fill="${cat.color}" rx="3" style="cursor:pointer" onmouseenter="showCatTip(event,'${cat.id}',${v})" onmouseleave="hideCatTip()"/>`
-    bars+=`<text x="${cx.toFixed(1)}" y="${(chartBottom-bH-4).toFixed(1)}" text-anchor="middle" font-family="JetBrains Mono,monospace" font-size="11" fill="${cat.color}" font-weight="600" style="pointer-events:none">${v}</text>`
+    bars+=`<text x="${cx.toFixed(1)}" y="${(chartBottom-bH-4).toFixed(1)}" text-anchor="middle" font-family="Inter,sans-serif" font-size="11" fill="${cat.color}" font-weight="600" style="pointer-events:none">${v}</text>`
     const lines=LLINES[cat.id]||[cat.label]
     lines.forEach((line,li)=>{
       bars+=`<text x="${cx.toFixed(1)}" y="${(chartBottom+lineH+li*lineH).toFixed(1)}" text-anchor="middle" font-family="Inter,sans-serif" font-size="10" fill="#5A6478">${line}</text>`
@@ -1072,6 +1098,7 @@ function renderDrawerBody(){
   const total=vals.reduce((s,v)=>s+(v||0),0)
   const struct=DRILLDOWN_STRUCTURE[siteId]
   if(!struct){document.getElementById('dr-body').innerHTML='<div style="padding:32px;text-align:center;color:var(--t3)">No detail data available</div>';return}
+  const sp=isSiteAnomalous(siteId)?findSpikePath(siteId):null
   const bldAreaCounts=struct.buildings.map(b=>b.floors.reduce((s,f)=>s+f.areas.length,0))
   const bldTotalAreas=bldAreaCounts.reduce((a,b)=>a+b,0)
   let html=''
@@ -1082,6 +1109,8 @@ function renderDrawerBody(){
     const filtBldTotal=bldVals.reduce((s,v)=>s+(v||0),0)
     const isOpen=!!expandedBldgs[bld.id]
     const barChartSVG=buildBarChartSVG(bldVals,filtBldTotal)
+    const isBldSpike=sp&&bld.id===sp.bldId
+    const bldSpikeExtra=isBldSpike?`${ANOMALY_SVG_SM}<button class="view-link" style="margin-left:0" onclick="event.stopPropagation();viewSpikeFloor('${bld.id}','${sp.flId}')">View issue</button>`:''
     let floorsHtml=''
     bld.floors.forEach(fl=>{
       const flFrac=fl.areas.length/bld.floors.reduce((s,f2)=>s+f2.areas.length,0)
@@ -1098,18 +1127,29 @@ function renderDrawerBody(){
           const filtATotal=aVals.reduce((s,v)=>s+(v||0),0)
           const aBarSegs=CATS.map(cat=>{const ci=CATS.indexOf(cat),v=aVals[ci]||0;const w=filtATotal>0?(v/filtATotal*100).toFixed(2):0;return `<div class="area-bar-seg" style="width:${w}%;background:${cat.color}"></div>`}).join('')
           const avJson=JSON.stringify(aVals).replace(/"/g,'&quot;')
-          areasHtml+=`<div class="area-row" onmouseenter="showAreaTip(event,'${area.name}',${avJson},${filtATotal})" onmouseleave="hideAreaTip()"><div class="area-row-top"><span class="area-name">${area.name}</span><span class="area-count">${filtATotal}</span></div><div class="area-bar-wrap">${aBarSegs}</div></div>`
+          const isAreaSpike=sp&&bld.id===sp.bldId&&fl.id===sp.flId&&area.name===sp.areaName
+          const areaNameHtml=isAreaSpike
+            ?`${area.name} <span class="spike-dot">•</span> <span class="spike-val">${sp.maxVal||aVals[sp.catIdx]} ${CATS[sp.catIdx].label} incidents</span> <span class="spike-chip">+${sp.pct}% vs avg</span>`
+            :area.name
+          areasHtml+=`<div class="area-row${isAreaSpike?' area-spike':''}" onmouseenter="showAreaTip(event,'${area.name}',${avJson},${filtATotal})" onmouseleave="hideAreaTip()"><div class="area-row-top"><span class="area-name">${areaNameHtml}</span><span class="area-count">${filtATotal}</span></div><div class="area-bar-wrap">${aBarSegs}</div></div>`
         })
       }
-      floorsHtml+=`<div class="floor-item"><div class="floor-header${flOpen?' open':''}" onclick="toggleFloor('${bld.id}','${fl.id}')"><div class="floor-header-top"><span class="floor-caret">▶</span><span class="floor-name">${fl.name}</span><span class="floor-count">${filtFlTotal}</span></div><div class="floor-minibar">${flBarSegs}</div></div><div class="floor-body${flOpen?' open':''}">${areasHtml}</div></div>`
+      floorsHtml+=`<div class="floor-item"><div class="floor-header${flOpen?' open':''}" onclick="toggleFloor('${bld.id}','${fl.id}')"><div class="floor-header-top"><span class="floor-caret">${CHEVRON_RIGHT}</span><span class="floor-name">${fl.name}</span><span class="floor-count">${filtFlTotal}</span></div><div class="floor-minibar">${flBarSegs}</div></div><div class="floor-body${flOpen?' open':''}">${areasHtml}</div></div>`
     })
-    html+=`<div class="bld-item"><div class="bld-header${isOpen?' open':''}" onclick="toggleBld('${bld.id}')"><div class="bld-header-top"><span class="bld-caret">▶</span><span class="bld-name">${bld.name}</span><span class="bld-count">${filtBldTotal} incidents</span></div><div class="bld-barchart">${barChartSVG}</div></div><div class="bld-body${isOpen?' open':''}">${isOpen?floorsHtml:''}</div></div>`
+    html+=`<div class="bld-item"><div class="bld-header${isOpen?' open':''}" onclick="toggleBld('${bld.id}')"><div class="bld-header-top"><span class="bld-caret">${CHEVRON_RIGHT}</span><span class="bld-name">${bld.name}</span><span class="bld-count">${filtBldTotal} incidents</span>${bldSpikeExtra}</div><div class="bld-barchart">${barChartSVG}</div></div><div class="bld-body${isOpen?' open':''}">${isOpen?floorsHtml:''}</div></div>`
   })
   document.getElementById('dr-body').innerHTML=html
 }
 
 function toggleBld(bldId){expandedBldgs[bldId]=!expandedBldgs[bldId];if(!expandedBldgs[bldId])delete expandedFloors[bldId];renderDrawerBody()}
 function toggleFloor(bldId,floorId){if(!expandedFloors[bldId])expandedFloors[bldId]={};expandedFloors[bldId][floorId]=!expandedFloors[bldId][floorId];renderDrawerBody()}
+function viewSpikeFloor(bldId,flId){
+  expandedBldgs[bldId]=true
+  if(!expandedFloors[bldId])expandedFloors[bldId]={}
+  expandedFloors[bldId][flId]=true
+  renderDrawerBody()
+  setTimeout(()=>{ const el=document.querySelector('.area-spike'); if(el) el.scrollIntoView({behavior:'smooth',block:'center'}) },80)
+}
 
 function showCatTip(event,catId,currentVal){
   const cat=CATS.find(c=>c.id===catId)
@@ -1134,7 +1174,7 @@ function showCatTip(event,catId,currentVal){
   const endLbl=monthYearLabel(MONTH_YEAR_ORDER[11]).split(' ')[0]
   const spark=document.getElementById('ctt-spark')
   spark.setAttribute('width',svgW);spark.setAttribute('height',svgH+12);spark.setAttribute('viewBox',`0 0 ${svgW} ${svgH+12}`)
-  spark.innerHTML=`<polyline points="${pts}" fill="none" stroke="${cat.color}" stroke-width="1.5" stroke-linejoin="round" opacity=".65"/><circle cx="${curX}" cy="${curY}" r="3" fill="${cat.color}"/><text x="${pL}" y="${svgH+11}" font-family="JetBrains Mono,monospace" font-size="8" fill="#9AA3B4">${startLbl}</text><text x="${svgW-pR}" y="${svgH+11}" text-anchor="end" font-family="JetBrains Mono,monospace" font-size="8" fill="#9AA3B4">${endLbl}</text>`
+  spark.innerHTML=`<polyline points="${pts}" fill="none" stroke="${cat.color}" stroke-width="1.5" stroke-linejoin="round" opacity=".65"/><circle cx="${curX}" cy="${curY}" r="3" fill="${cat.color}"/><text x="${pL}" y="${svgH+11}" font-family="Inter,sans-serif" font-size="8" fill="#9AA3B4">${startLbl}</text><text x="${svgW-pR}" y="${svgH+11}" text-anchor="end" font-family="Inter,sans-serif" font-size="8" fill="#9AA3B4">${endLbl}</text>`
   document.getElementById('cat-tooltip').style.display='block'
   posCatTip(event)
 }
@@ -1144,7 +1184,7 @@ document.addEventListener('mousemove',e=>{if(document.getElementById('cat-toolti
 
 function showAreaTip(e,name,vals,tot){
   const tt=document.getElementById('area-tooltip')
-  const rows=CATS.map((cat,i)=>vals[i]?`<div style="display:flex;justify-content:space-between;gap:12px;margin-bottom:2px"><span style="display:flex;align-items:center;gap:5px"><span style="width:7px;height:7px;border-radius:50%;background:${cat.color};display:inline-block;flex-shrink:0"></span>${cat.label}</span><span style="font-family:JetBrains Mono,monospace;font-size:11px">${vals[i]}</span></div>`:'').filter(Boolean).join('')
+  const rows=CATS.map((cat,i)=>vals[i]?`<div style="display:flex;justify-content:space-between;gap:12px;margin-bottom:2px"><span style="display:flex;align-items:center;gap:5px"><span style="width:7px;height:7px;border-radius:50%;background:${cat.color};display:inline-block;flex-shrink:0"></span>${cat.label}</span><span style="font-family:Inter,sans-serif;font-size:11px">${vals[i]}</span></div>`:'').filter(Boolean).join('')
   tt.innerHTML=`<div style="font-weight:600;margin-bottom:6px;padding-bottom:5px;border-bottom:1px solid var(--border)">${name} · ${tot} total</div>${rows}`
   tt.style.display='block'
   posAreaTip(e)
@@ -1256,8 +1296,8 @@ function renderTLTable(){
     const ex=!!tlExpandState[r.site.id]
     const isAnomaly=isSiteAnomalous(r.site.id)
     const sp=isAnomaly?findTimelineSpike(r.site.id):null
-    const extras=isAnomaly?`${ANOMALY_SVG}<button class="view-link" onclick="event.stopPropagation();viewSpikeTimeline('${r.site.id}')">View</button>`:''
-    html+=`<tr class="site-row" data-siteid="${r.site.id}"><td style="white-space:nowrap"><button class="expand-btn${ex?' open':''}" onclick="toggleTLRow('${r.site.id}')" data-expand="1"><span class="tri">▶</span></button><span class="site-name-link">${r.site.name}</span>${extras}</td>${numCell(r.total,true)}${r.cats.map(v=>numCell(v)).join('')}</tr>`
+    const extras=isAnomaly?`${ANOMALY_SVG}<button class="view-link" onclick="event.stopPropagation();viewSpikeTimeline('${r.site.id}')">View issue</button>`:''
+    html+=`<tr class="site-row" data-siteid="${r.site.id}"><td style="white-space:nowrap"><button class="expand-btn${ex?' open':''}" onclick="toggleTLRow('${r.site.id}')" data-expand="1"><span class="tri">${CHEVRON_RIGHT}</span></button><span class="site-name-link">${r.site.name}</span>${extras}</td>${numCell(r.total,true)}${r.cats.map(v=>numCell(v)).join('')}</tr>`
     if(ex){
       const subRows=tlGran==='week'?tlWeekRows(r.site.id):tlMonthRows(r.site.id)
       subRows.forEach(sr=>{
