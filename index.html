@@ -1366,13 +1366,13 @@ function updateKPIs(){
     const incEl=document.getElementById('kpi-inc-val')
     incEl.innerHTML=`${peak.total}<span class="kpi-peak-month">${MSHORT_KPI[peak.mi]} ${MYR_KPI[peak.mi]}</span>`
     incEl.style.color='#C0385A'
-    document.getElementById('kpi-inc-sub').textContent=''
-    document.getElementById('kpi-inc-sub2').textContent=`+${peakPct}% vs monthly avg`
+    document.getElementById('kpi-inc-sub').textContent=`+${peakPct}% vs monthly avg`
+    document.getElementById('kpi-inc-sub2').textContent=''
     const dropEl=document.getElementById('kpi-drop-val')
     dropEl.innerHTML=`${quiet.total}<span class="kpi-peak-month">${MSHORT_KPI[quiet.mi]} ${MYR_KPI[quiet.mi]}</span>`
     dropEl.style.color='#16A34A'
-    document.getElementById('kpi-drop-sub').textContent=''
-    document.getElementById('kpi-drop-sub2').textContent=`${quietPct}% vs monthly avg`
+    document.getElementById('kpi-drop-sub').textContent=`${quietPct}% vs monthly avg`
+    document.getElementById('kpi-drop-sub2').textContent=''
   }
 
   // 5. Spike day
@@ -1722,7 +1722,7 @@ renderTimeline(); renderTimelineTable(); updateKPIs(); renderIncidentsTable()
 </script>
 </body>
 </html>
-<!-- bust 1741777200 -->
+<!-- bust 1741777800 -->
 <!-- Wed Mar 11 12:56:49 CET 2026 -->
 <!-- cache-bust 1773258729 -->
 <!-- bust 1773281659 -->
